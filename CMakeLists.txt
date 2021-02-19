@@ -60,8 +60,9 @@ zephyr_library_sources(${SOURCES})
 endif() # CONFIG_LVGL
 
 elseif(LIBPRV)
-    file(GLOB_RECURSE SOURCES src/*.c)
+    file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
     target_sources("${PROJECT_NAME}" PRIVATE ${SOURCES})
+    target_include_directories("${PROJECT_NAME}" PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 else()
 message(FATAL_ERROR "Unknown platform.")
 endif()
