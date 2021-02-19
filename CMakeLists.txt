@@ -59,6 +59,9 @@ zephyr_library_sources(${SOURCES})
 
 endif() # CONFIG_LVGL
 
+elseif(LIBPRV)
+    file(GLOB_RECURSE SOURCES src/*.c)
+    target_sources("${PROJECT_NAME}" PRIVATE ${SOURCES})
 else()
 message(FATAL_ERROR "Unknown platform.")
 endif()
