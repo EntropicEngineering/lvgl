@@ -14,6 +14,7 @@ extern "C" {
  *      INCLUDES
  *********************/
 #include "default/lv_theme_default.h"
+#include "basic/lv_theme_basic.h"
 
 /*********************
  *      DEFINES
@@ -32,7 +33,7 @@ extern "C" {
  **********************/
 
 #ifdef __cplusplus
-} /* extern "C" */
+} /*extern "C"*/
 #endif
 
 #endif /*LV_THEMES_H*/

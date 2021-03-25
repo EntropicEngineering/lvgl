@@ -83,15 +83,15 @@ LV_ATTRIBUTE_TIMER_HANDLER uint32_t lv_timer_handler(void)
 
     uint32_t handler_start = lv_tick_get();
 
-    /* Run all timer from the list*/
+    /*Run all timer from the list*/
     lv_timer_t * next;
     do {
         timer_deleted             = false;
         timer_created             = false;
         LV_GC_ROOT(_lv_timer_act) = _lv_ll_get_head(&LV_GC_ROOT(_lv_timer_ll));
         while(LV_GC_ROOT(_lv_timer_act)) {
-            /* The timer might be deleted if it runs only once ('repeat_count = 1')
-             * So get next element until the current is surely valid*/
+            /*The timer might be deleted if it runs only once ('repeat_count = 1')
+             *So get next element until the current is surely valid*/
             next = _lv_ll_get_next(&LV_GC_ROOT(_lv_timer_ll), LV_GC_ROOT(_lv_timer_act));
 
             if(lv_timer_exec(LV_GC_ROOT(_lv_timer_act))) {
@@ -286,9 +286,9 @@ static bool lv_timer_exec(lv_timer_t * timer)
     bool exec = false;
     if(lv_timer_time_remaining(timer) == 0) {
         timer->last_run = lv_tick_get();
-        TIMER_TRACE("calling timer callback: 0x%p", timer->timer_cb);
+        TIMER_TRACE("calling timer callback: %p", timer->timer_cb);
         if(timer->timer_cb) timer->timer_cb(timer);
-        TIMER_TRACE("timer callback 0x%p finished", timer->timer_cb);
+        TIMER_TRACE("timer callback %p finished", timer->timer_cb);
         LV_ASSERT_MEM_INTEGRITY();
 
         /*Delete if it was a one shot lv_timer*/
@@ -297,7 +297,7 @@ static bool lv_timer_exec(lv_timer_t * timer)
                 timer->repeat_count--;
             }
             if(timer->repeat_count == 0) {
-                TIMER_TRACE("deleting timer with 0x%p callback because the repeat count is over", timer->timer_cb);
+                TIMER_TRACE("deleting timer with %p callback because the repeat count is over", timer->timer_cb);
                 lv_timer_del(timer);
             }
         }

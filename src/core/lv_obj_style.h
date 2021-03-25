@@ -4,7 +4,7 @@
  */
 
 #ifndef LV_OBJ_STYLE_H
-#define LV_OB_STYLE_H
+#define LV_OBJ_STYLE_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,7 +23,7 @@ extern "C" {
 /**********************
  *      TYPEDEFS
  **********************/
-/* Can't include lv_obj.h because it includes this header file */
+/*Can't include lv_obj.h because it includes this header file*/
 struct _lv_obj_t;
 
 typedef enum {
@@ -40,12 +40,6 @@ typedef struct {
     uint8_t is_local :1;
     uint8_t is_trans :1;
 }lv_obj_style_t;
-
-typedef struct {
-    lv_obj_style_t * styles;
-    uint8_t style_cnt;
-    uint8_t skip_trans :1;
-}lv_obj_style_list_t;
 
 /**********************
  * GLOBAL PROTOTYPES
@@ -212,7 +206,7 @@ static inline void lv_obj_set_style_pad_gap(struct _lv_obj_t * obj, uint32_t par
  **********************/
 
 #ifdef __cplusplus
-} /* extern "C" */
+} /*extern "C"*/
 #endif
 
 #endif /*LV_TEMPL_H*/

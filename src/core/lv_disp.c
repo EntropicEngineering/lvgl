@@ -128,6 +128,14 @@ lv_obj_t * lv_disp_get_layer_sys(lv_disp_t * disp)
 void lv_disp_set_theme(lv_disp_t * disp, lv_theme_t * th)
 {
     disp->theme = th;
+
+    if(disp->screen_cnt == 3 &&
+        lv_obj_get_child_cnt(disp->screens[0]) == 0 &&
+        lv_obj_get_child_cnt(disp->screens[1]) == 0 &&
+        lv_obj_get_child_cnt(disp->screens[2]) == 0)
+    {
+        lv_theme_apply(disp->screens[0]);
+    }
 }
 /**
  * Get the theme of a display
@@ -258,7 +266,7 @@ void lv_scr_load_anim(lv_obj_t * new_scr, lv_scr_load_anim_t anim_type, uint32_t
 
     switch(anim_type) {
         case LV_SCR_LOAD_ANIM_NONE:
-            /* Create a dummy animation to apply the delay*/
+            /*Create a dummy animation to apply the delay*/
             lv_anim_set_exec_cb(&a_new, set_x_anim);
             lv_anim_set_values(&a_new, 0, 0);
             break;

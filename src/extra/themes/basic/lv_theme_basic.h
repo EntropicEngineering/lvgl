@@ -1,14 +1,10 @@
-
 /**
- * @file lv_port_indev_templ.h
+ * @file lv_theme_basic.h
  *
  */
 
- /*Copy this file as "lv_port_indev.h" and set this value to "1" to enable content*/
-#if 0
-
-#ifndef LV_PORT_INDEV_TEMPL_H
-#define LV_PORT_INDEV_TEMPL_H
+#ifndef LV_THEME_BASIC_H
+#define LV_THEME_BASIC_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,7 +13,9 @@ extern "C" {
 /*********************
  *      INCLUDES
  *********************/
-#include "lvgl/lvgl.h"
+#include "../../../core/lv_obj.h"
+
+#if LV_USE_THEME_BASIC
 
 /*********************
  *      DEFINES
@@ -31,14 +29,21 @@ extern "C" {
  * GLOBAL PROTOTYPES
  **********************/
 
+/**
+ * Initialize the theme
+ * @param disp pointer to display to attach the theme
+ * @return a pointer to reference this theme later
+ */
+lv_theme_t * lv_theme_basic_init(lv_disp_t * disp);
+
 /**********************
  *      MACROS
  **********************/
+
+#endif
 
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
 
-#endif /*LV_PORT_INDEV_TEMPL_H*/
-
-#endif /*Disable/Enable content*/
+#endif /*LV_THEME_BASIC_H*/
