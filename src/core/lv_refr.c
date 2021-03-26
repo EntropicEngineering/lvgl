@@ -197,10 +197,8 @@ void _lv_disp_refr_timer(lv_timer_t * tmr)
 #endif
 
     /*Refresh the screen's layout if required*/
-    uint32_t i;
-    for(i = 0; i < disp_refr->screen_cnt; i++) {
-        lv_obj_update_layout(disp_refr->screens[i]);
-    }
+    lv_obj_update_layout(disp_refr->act_scr);
+    if(disp_refr->prev_scr) lv_obj_update_layout(disp_refr->prev_scr);
 
     lv_obj_update_layout(disp_refr->top_layer);
     lv_obj_update_layout(disp_refr->sys_layer);
@@ -241,7 +239,7 @@ void _lv_disp_refr_timer(lv_timer_t * tmr)
 #if LV_USE_PERF_MONITOR && LV_USE_LABEL
     static lv_obj_t * perf_label = NULL;
     if(perf_label == NULL) {
-        perf_label = lv_label_create(lv_layer_sys(), NULL);
+        perf_label = lv_label_create(lv_layer_sys());
         lv_obj_set_style_bg_opa(perf_label, LV_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_50);
         lv_obj_set_style_bg_color(perf_label, LV_PART_MAIN, LV_STATE_DEFAULT, lv_color_black());
         lv_obj_set_style_text_color(perf_label, LV_PART_MAIN, LV_STATE_DEFAULT, lv_color_white());
@@ -251,7 +249,7 @@ void _lv_disp_refr_timer(lv_timer_t * tmr)
         lv_obj_set_style_pad_right(perf_label, LV_PART_MAIN, LV_STATE_DEFAULT, 3);
         lv_obj_set_style_text_align(perf_label, LV_PART_MAIN, LV_STATE_DEFAULT, LV_TEXT_ALIGN_RIGHT);
         lv_label_set_text(perf_label, "?");
-        lv_obj_align(perf_label, NULL, LV_ALIGN_IN_BOTTOM_RIGHT, 0, 0);
+        lv_obj_align(perf_label, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
     }
 
     static uint32_t perf_last_time = 0;
@@ -279,14 +277,13 @@ void _lv_disp_refr_timer(lv_timer_t * tmr)
         fps_sum_cnt ++;
         uint32_t cpu = 100 - lv_timer_get_idle();
         lv_label_set_text_fmt(perf_label, "%d FPS\n%d%% CPU", fps, cpu);
-        lv_obj_align(perf_label, NULL, LV_ALIGN_IN_BOTTOM_RIGHT, 0, 0);
     }
 #endif
 
 #if LV_USE_MEM_MONITOR && LV_MEM_CUSTOM == 0 && LV_USE_LABEL
     static lv_obj_t * mem_label = NULL;
     if(mem_label == NULL) {
-        mem_label = lv_label_create(lv_layer_sys(), NULL);
+        mem_label = lv_label_create(lv_layer_sys());
         lv_obj_set_style_bg_opa(mem_label, LV_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_50);
         lv_obj_set_style_bg_color(mem_label, LV_PART_MAIN, LV_STATE_DEFAULT, lv_color_black());
         lv_obj_set_style_text_color(mem_label, LV_PART_MAIN, LV_STATE_DEFAULT, lv_color_white());
@@ -295,7 +292,7 @@ void _lv_disp_refr_timer(lv_timer_t * tmr)
         lv_obj_set_style_pad_left(mem_label, LV_PART_MAIN, LV_STATE_DEFAULT, 3);
         lv_obj_set_style_pad_right(mem_label, LV_PART_MAIN, LV_STATE_DEFAULT, 3);
         lv_label_set_text(mem_label, "?");
-        lv_obj_align(mem_label, NULL, LV_ALIGN_IN_BOTTOM_LEFT, 0, 0);
+        lv_obj_align(mem_label, LV_ALIGN_BOTTOM_LEFT, 0, 0);
     }
 
     static uint32_t mem_last_time = 0;
@@ -307,7 +304,6 @@ void _lv_disp_refr_timer(lv_timer_t * tmr)
         uint32_t used_kb = used_size / 1024;
         uint32_t used_kb_tenth = (used_size - (used_kb * 1024)) / 102;
         lv_label_set_text_fmt(mem_label, "%d.%d kB used (%d %%)\n%d%% frag.", used_kb,  used_kb_tenth, mon.used_pct, mon.frag_pct);
-        lv_obj_align(mem_label, NULL, LV_ALIGN_IN_BOTTOM_LEFT, 0, 0);
     }
 #endif
 

@@ -12,7 +12,8 @@ void lv_example_list_1(void)
 {
     /*Create a list*/
     list1 = lv_list_create(lv_scr_act());
-    lv_obj_align(list1, NULL, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_set_size(list1, 180, 220);
+    lv_obj_center(list1);
 
     /*Add buttons to the list*/
     lv_list_add_text(list1, "File");

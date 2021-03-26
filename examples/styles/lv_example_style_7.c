@@ -22,12 +22,12 @@ void lv_example_style_7(void)
     lv_style_set_text_decor(&style, LV_TEXT_DECOR_UNDERLINE);
 
     /*Create an object with the new style*/
-    lv_obj_t * obj = lv_label_create(lv_scr_act(), NULL);
+    lv_obj_t * obj = lv_label_create(lv_scr_act());
     lv_obj_add_style(obj, LV_PART_MAIN, LV_STATE_DEFAULT, &style);
     lv_label_set_text(obj, "Text of\n"
                             "a label");
 
-    lv_obj_align(obj, NULL, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_center(obj);
 }
 
 #endif

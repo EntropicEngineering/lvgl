@@ -1,10 +1,10 @@
 /**
- * @file lv_spinner.h
+ * @file lv_extra.h
  *
  */
 
-#ifndef LV_SPINNER_H
-#define LV_SPINNER_H
+#ifndef LV_EXTRA_H
+#define LV_EXTRA_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -13,14 +13,6 @@ extern "C" {
 /*********************
  *      INCLUDES
  *********************/
-#include "../../../lvgl.h"
-
-#if LV_USE_SPINNER
-
-/*Testing of dependencies*/
-#if LV_USE_ARC == 0
-#error "lv_spinner: lv_arc is required. Enable it in lv_conf.h (LV_USE_ARC  1) "
-#endif
 
 /*********************
  *      DEFINES
@@ -34,16 +26,17 @@ extern "C" {
  * GLOBAL PROTOTYPES
  **********************/
 
-lv_obj_t * lv_spinner_create(lv_obj_t * parent, uint32_t time, uint32_t arc_length);
+/**
+ * Initialize the extra components
+ */
+void lv_extra_init(void);
 
 /**********************
  *      MACROS
  **********************/
 
-#endif /*LV_USE_SPINNER*/
-
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
 
-#endif /*LV_SPINNER_H*/
+#endif /*LV_EXTRA_H*/

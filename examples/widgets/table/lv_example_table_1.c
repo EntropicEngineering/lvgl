@@ -33,7 +33,7 @@ static void event_cb(lv_obj_t * obj, lv_event_t e)
 
 void lv_example_table_1(void)
 {
-    lv_obj_t * table = lv_table_create(lv_scr_act(), NULL);
+    lv_obj_t * table = lv_table_create(lv_scr_act());
 
     /*Fill the first column*/
     lv_table_set_cell_value(table, 0, 0, "Name");
@@ -57,7 +57,7 @@ void lv_example_table_1(void)
 
     /*Set a smaller height to the table. It'll make it scrollable*/
     lv_obj_set_height(table, 200);
-    lv_obj_align(table, NULL, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_center(table);
 
     /*Add an event callback to to apply some custom drawing*/
     lv_obj_add_event_cb(table, event_cb, NULL);

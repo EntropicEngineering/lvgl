@@ -10,7 +10,7 @@ props = [
 {'name': 'TRANSFORM_ZOOM',            'style_type': 'num',   'var_type': 'lv_coord_t' },
 {'name': 'TRANSFORM_ANGLE',           'style_type': 'num',   'var_type': 'lv_coord_t' },
 {'name': 'OPA',                       'style_type': 'num',   'var_type': 'lv_opa_t' },
-{'name': 'COLOR_FILTER_CB',           'style_type': 'func',  'var_type': 'lv_color_filter_cb_t' },
+{'name': 'COLOR_FILTER_DSC',          'style_type': 'ptr',   'var_type': 'const lv_color_filter_dsc_t *' },
 {'name': 'COLOR_FILTER_OPA',          'style_type': 'num',   'var_type': 'lv_opa_t' },
 {'name': 'ANIM_TIME',                 'style_type': 'num',   'var_type': 'uint32_t' },
 {'name': 'TRANSITION',                'style_type': 'ptr',   'var_type': 'const lv_style_transition_dsc_t *' },
@@ -22,6 +22,12 @@ props = [
 {'name': 'PAD_RIGHT',                 'style_type': 'num',   'var_type': 'lv_coord_t' },
 {'name': 'PAD_ROW',                   'style_type': 'num',   'var_type': 'lv_coord_t' },
 {'name': 'PAD_COLUMN',                'style_type': 'num',   'var_type': 'lv_coord_t' },
+{'name': 'WIDTH',                     'style_type': 'num',   'var_type': 'lv_coord_t' },
+{'name': 'HEIGHT',                    'style_type': 'num',   'var_type': 'lv_coord_t' },
+{'name': 'X',                         'style_type': 'num',   'var_type': 'lv_coord_t' },
+{'name': 'Y',                         'style_type': 'num',   'var_type': 'lv_coord_t' },
+{'name': 'ALIGN',                     'style_type': 'num',   'var_type': 'lv_align_t' },
+{'name': 'LAYOUT',                    'style_type': 'num',   'var_type': 'uint16_t' },
 {'name': 'BG_COLOR',                  'style_type': 'color', 'var_type': 'lv_color_t' },
 {'name': 'BG_COLOR_FILTERED',         'style_type': 'color', 'var_type': 'lv_color_t' },
 {'name': 'BG_OPA',                    'style_type': 'num',   'var_type': 'lv_opa_t' },
@@ -79,17 +85,6 @@ props = [
 {'name': 'ARC_COLOR_FILTERED',        'style_type': 'color', 'var_type': 'lv_color_t' },
 {'name': 'ARC_OPA',                   'style_type': 'num',   'var_type': 'lv_opa_t' },   
 {'name': 'ARC_IMG_SRC',               'style_type': 'ptr',   'var_type': 'const void *' },
-{'name': 'CONTENT_TEXT',              'style_type': 'ptr',   'var_type': 'const char *' },
-{'name': 'CONTENT_ALIGN',             'style_type': 'num',   'var_type': 'lv_align_t' },
-{'name': 'CONTENT_OFS_X',             'style_type': 'num',   'var_type': 'lv_coord_t' },
-{'name': 'CONTENT_OFS_Y',             'style_type': 'num',   'var_type': 'lv_coord_t' },
-{'name': 'CONTENT_OPA',               'style_type': 'num',   'var_type': 'lv_opa_t' },
-{'name': 'CONTENT_FONT',              'style_type': 'ptr',   'var_type': 'const lv_font_t *' },
-{'name': 'CONTENT_COLOR',             'style_type': 'color', 'var_type': 'lv_color_t' },
-{'name': 'CONTENT_COLOR_FILTERED',    'style_type': 'color', 'var_type': 'lv_color_t' },
-{'name': 'CONTENT_LETTER_SPACE',      'style_type': 'num',   'var_type': 'lv_coord_t' },
-{'name': 'CONTENT_LINE_SPACE',        'style_type': 'num',   'var_type': 'lv_coord_t' },
-{'name': 'CONTENT_DECOR',             'style_type': 'num',   'var_type': 'lv_text_decor_t' },
 ]
 
 def obj_style_get(p):
@@ -104,9 +99,7 @@ def obj_style_get(p):
 
 def get_func_cast(style):
   func_cast = ""
-  if style == 'func':
-    func_cast = "(void (*)(void))"
-  elif style == 'num':
+  if style == 'num':
     func_cast = "(int32_t)"
   return func_cast
 
