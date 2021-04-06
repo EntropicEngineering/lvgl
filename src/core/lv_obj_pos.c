@@ -107,7 +107,9 @@ void lv_obj_refr_size(lv_obj_t * obj)
     bool h_content = h == LV_SIZE_CONTENT ? true : false;
 
     /*Be sure the object is not scrolled when it has auto size*/
+    lv_coord_t sl_ori = lv_obj_get_scroll_left(obj);
     if(w_content) lv_obj_scroll_to_x(obj, 0, LV_ANIM_OFF);
+    lv_coord_t st_ori = lv_obj_get_scroll_top(obj);
     if(h_content) lv_obj_scroll_to_y(obj, 0, LV_ANIM_OFF);
 
     if(w_content && h_content) calc_auto_size(obj, &w, &h);
@@ -125,11 +127,16 @@ void lv_obj_refr_size(lv_obj_t * obj)
 
     lv_coord_t minw = lv_obj_get_style_min_width(obj, LV_PART_MAIN);
     lv_coord_t maxw = lv_obj_get_style_max_width(obj, LV_PART_MAIN);
-    w = LV_CLAMP(minw, w, maxw);
+    w = lv_clamp_width(w, minw, maxw, parent_w);
 
     lv_coord_t minh = lv_obj_get_style_min_height(obj, LV_PART_MAIN);
     lv_coord_t maxh = lv_obj_get_style_max_height(obj, LV_PART_MAIN);
-    h = LV_CLAMP(minh, h, maxh);
+    h = lv_clamp_width(h, minh, maxh, parent_h);
+
+    /*calc_auto_size set the scroll x/y to 0 so revert the original value*/
+    if(w_content || h_content) {
+        lv_obj_scroll_to(obj, sl_ori, st_ori, LV_ANIM_OFF);
+    }
 
     /*Do nothing if the size is not changed*/
     /*It is very important else recursive resizing can occur without size change*/
@@ -647,8 +654,13 @@ void lv_obj_move_to(lv_obj_t * obj, lv_coord_t x, lv_coord_t y)
         lv_coord_t pad_left = lv_obj_get_style_pad_left(parent, LV_PART_MAIN);
         lv_coord_t pad_top = lv_obj_get_style_pad_top(parent, LV_PART_MAIN);
 
-        x += pad_left + parent->coords.x1 - lv_obj_get_scroll_x(parent);
-        y += pad_top + parent->coords.y1 - lv_obj_get_scroll_y(parent);
+        if(lv_obj_has_flag(obj, LV_OBJ_FLAG_FLOATING)) {
+            x += pad_left + parent->coords.x1;
+            y += pad_top + parent->coords.y1;
+        } else {
+            x += pad_left + parent->coords.x1 - lv_obj_get_scroll_x(parent);
+            y += pad_top + parent->coords.y1 - lv_obj_get_scroll_y(parent);
+        }
     }
 
     /*Calculate and set the movement*/
@@ -839,6 +851,21 @@ bool lv_obj_hit_test(lv_obj_t * obj, const lv_point_t * point)
 
     return res;
 }
+
+lv_coord_t lv_clamp_width(lv_coord_t width, lv_coord_t min_width, lv_coord_t max_width, lv_coord_t ref_width)
+{
+    if(LV_COORD_IS_PCT(min_width)) min_width = (ref_width * LV_COORD_GET_PCT(min_width)) / 100;
+    if(LV_COORD_IS_PCT(max_width)) max_width = (ref_width * LV_COORD_GET_PCT(max_width)) / 100;
+    return LV_CLAMP(min_width, width, max_width);
+}
+
+lv_coord_t lv_clamp_height(lv_coord_t height, lv_coord_t min_height, lv_coord_t max_height, lv_coord_t ref_height)
+{
+    if(LV_COORD_IS_PCT(min_height)) min_height = (ref_height * LV_COORD_GET_PCT(min_height)) / 100;
+    if(LV_COORD_IS_PCT(max_height)) max_height = (ref_height * LV_COORD_GET_PCT(max_height)) / 100;
+    return LV_CLAMP(min_height, height, max_height);
+}
+
 
 
 /**********************
