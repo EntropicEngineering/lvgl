@@ -55,6 +55,8 @@ const lv_obj_class_t lv_chart_class = {
     .constructor_cb = lv_chart_constructor,
     .destructor_cb = lv_chart_destructor,
     .event_cb = lv_chart_event,
+    .width_def = LV_SIZE_PCT(100),
+    .height_def = LV_DPI_DEF * 2,
     .instance_size = sizeof(lv_chart_t),
     .base_class = &lv_obj_class
 };
@@ -369,7 +371,7 @@ void lv_chart_remove_series(lv_obj_t * obj, lv_chart_series_t * series)
 {
     LV_ASSERT_OBJ(obj, MY_CLASS);
     LV_ASSERT_NULL(series);
-    
+
     lv_chart_t * chart    = (lv_chart_t *)obj;
     if(!series->ext_buf_assigned && series->points) lv_mem_free(series->points);
 
@@ -584,8 +586,6 @@ static void lv_chart_constructor(lv_obj_t * obj)
     chart->update_mode = LV_CHART_UPDATE_MODE_SHIFT;
     chart->zoom_x      = LV_IMG_ZOOM_NONE;
     chart->zoom_y      = LV_IMG_ZOOM_NONE;
-
-    lv_obj_set_size(obj, LV_DPI_DEF * 3, LV_DPI_DEF * 2);
 
     LV_TRACE_OBJ_CREATE("finished");
 }
@@ -906,17 +906,17 @@ static void draw_series_bar(lv_obj_t * obj, const lv_area_t * clip_area)
 
     lv_obj_draw_dsc_t dsc;
     lv_obj_draw_dsc_init(&dsc, &series_mask);
-	dsc.part = LV_PART_ITEMS;
+    dsc.part = LV_PART_ITEMS;
 
     /*Go through all points*/
     for(i = 0; i < chart->point_cnt; i++) {
         lv_coord_t x_act = (int32_t)((int32_t)(w + block_gap) * i) / (chart->point_cnt) + obj->coords.x1 + x_ofs;
 
-		dsc.id = i;
+        dsc.id = i;
 
         /*Draw the current point of all data line*/
         _LV_LL_READ_BACK(&chart->series_ll, ser) {
-        	if (ser->hidden) continue;
+            if (ser->hidden) continue;
             lv_coord_t start_point = chart->update_mode == LV_CHART_UPDATE_MODE_SHIFT ? ser->last_point : 0;
 
             col_a.x1 = x_act;
@@ -934,13 +934,13 @@ static void draw_series_bar(lv_obj_t * obj, const lv_area_t * clip_area)
             col_a.y1         = h - y_tmp + obj->coords.y1 + y_ofs;
 
             if(ser->points[p_act] != LV_CHART_POINT_NONE) {
-            	dsc.draw_area = &col_a;
-            	dsc.rect_dsc = &col_dsc;
-            	dsc.sub_part_ptr = ser;
+                dsc.draw_area = &col_a;
+                dsc.rect_dsc = &col_dsc;
+                dsc.sub_part_ptr = ser;
                 dsc.value = ser->points[p_act];
-            	lv_event_send(obj, LV_EVENT_DRAW_PART_BEGIN, &dsc);
+                lv_event_send(obj, LV_EVENT_DRAW_PART_BEGIN, &dsc);
                 lv_draw_rect(&col_a, &series_mask, &col_dsc);
-            	lv_event_send(obj, LV_EVENT_DRAW_PART_END, &dsc);
+                lv_event_send(obj, LV_EVENT_DRAW_PART_END, &dsc);
             }
         }
     }

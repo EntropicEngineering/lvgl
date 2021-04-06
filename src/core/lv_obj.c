@@ -51,8 +51,7 @@ typedef struct _lv_event_temp_data {
 typedef struct {
     uint16_t time;
     uint16_t delay;
-    lv_part_t part;
-    lv_state_t state;
+    lv_style_selector_t selector;
     lv_style_prop_t prop;
     const lv_anim_path_t * path;
 }trans_set_t;
@@ -82,6 +81,8 @@ const lv_obj_class_t lv_obj_class = {
     .constructor_cb = lv_obj_constructor,
     .destructor_cb = lv_obj_destructor,
     .event_cb = lv_obj_event_cb,
+    .width_def = LV_DPI_DEF,
+    .height_def = LV_DPI_DEF,
     .instance_size = (sizeof(lv_obj_t)),
     .base_class = NULL,
 };
@@ -350,7 +351,7 @@ void lv_obj_add_flag(lv_obj_t * obj, lv_obj_flag_t f)
     obj->flags |= f;
 
     if(f & LV_OBJ_FLAG_HIDDEN) {
-    	lv_obj_invalidate(obj);
+        lv_obj_invalidate(obj);
     }
 
     if((was_on_layout != lv_obj_is_layout_positioned(obj)) || (f & (LV_OBJ_FLAG_LAYOUT_1 |  LV_OBJ_FLAG_LAYOUT_2))) {
@@ -367,10 +368,10 @@ void lv_obj_clear_flag(lv_obj_t * obj, lv_obj_flag_t f)
     obj->flags &= (~f);
 
     if(f & LV_OBJ_FLAG_HIDDEN) {
-    	lv_obj_invalidate(obj);
-    	if(lv_obj_is_layout_positioned(obj)) {
-    	    lv_obj_mark_layout_as_dirty(lv_obj_get_parent(obj));
-    	}
+        lv_obj_invalidate(obj);
+        if(lv_obj_is_layout_positioned(obj)) {
+            lv_obj_mark_layout_as_dirty(lv_obj_get_parent(obj));
+        }
     }
 
     if((was_on_layout != lv_obj_is_layout_positioned(obj)) || (f & (LV_OBJ_FLAG_LAYOUT_1 |  LV_OBJ_FLAG_LAYOUT_2))) {
@@ -627,8 +628,6 @@ static void lv_obj_constructor(lv_obj_t * obj)
         obj->coords.y2 = obj->coords.y1 - 1;
         obj->coords.x1  = parent->coords.x1 + lv_obj_get_style_pad_left(parent, LV_PART_MAIN) - sl;
         obj->coords.x2  = obj->coords.x1 - 1;
-
-        lv_obj_set_size(obj, LV_OBJ_DEF_WIDTH, LV_OBJ_DEF_HEIGHT);
     }
 
     /*Set attributes*/
@@ -956,9 +955,7 @@ static void lv_obj_event_cb(lv_obj_t * obj, lv_event_t e)
             lv_obj_refr_pos(child);
         }
 
-        if(lv_obj_get_style_layout(obj, LV_PART_MAIN)) {
-            lv_obj_mark_layout_as_dirty(obj);
-        }
+        lv_obj_mark_layout_as_dirty(obj);
 
         lv_obj_refresh_ext_draw_size(obj);
     }
@@ -992,7 +989,8 @@ static void lv_obj_set_state(lv_obj_t * obj, lv_state_t new_state)
     uint32_t i;
     for(i = 0; i < obj->style_cnt && tsi < STYLE_TRANSITION_MAX; i++) {
         lv_obj_style_t * obj_style = &obj->styles[i];
-        if(obj_style->state & (~new_state)) continue; /*Skip unrelated styles*/
+        lv_state_t state_act = lv_obj_style_get_selector_state(obj->styles[i].selector);
+        if(state_act & (~new_state)) continue; /*Skip unrelated styles*/
         if(obj_style->is_trans) continue;
 
         lv_style_value_t v;
@@ -1004,7 +1002,8 @@ static void lv_obj_set_state(lv_obj_t * obj, lv_state_t new_state)
         for(j = 0; tr->props[j] != 0 && tsi < STYLE_TRANSITION_MAX; j++) {
             uint32_t t;
             for(t = 0; t < tsi; t++) {
-                if(ts[t].prop == tr->props[j] && ts[t].state >= obj_style->state) break;
+                lv_state_t state_tr = lv_obj_style_get_selector_state(ts[t].selector);
+                if(ts[t].prop == tr->props[j] && state_tr >= state_act) break;
             }
 
             /*If not found  add it*/
@@ -1013,15 +1012,15 @@ static void lv_obj_set_state(lv_obj_t * obj, lv_state_t new_state)
                 ts[tsi].delay = tr->delay;
                 ts[tsi].path = tr->path;
                 ts[tsi].prop = tr->props[j];
-                ts[tsi].part = obj_style->part;
-                ts[tsi].state = obj_style->state;
+                ts[tsi].selector = obj_style->selector;
                 tsi++;
             }
         }
     }
 
     for(i = 0;i < tsi; i++) {
-        _lv_obj_style_create_transition(obj, ts[i].prop, ts[i].part, prev_state, new_state, ts[i].time, ts[i].delay, ts[i].path);
+        lv_part_t part_act = lv_obj_style_get_selector_part(ts[i].selector);
+        _lv_obj_style_create_transition(obj, ts[i].prop, part_act, prev_state, new_state, ts[i].time, ts[i].delay, ts[i].path);
     }
 
     lv_mem_buf_release(ts);

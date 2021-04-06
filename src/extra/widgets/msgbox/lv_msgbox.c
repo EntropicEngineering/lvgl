@@ -46,9 +46,9 @@ lv_obj_t * lv_msgbox_create(const char * title, const char * txt, const char * b
     lv_obj_t * parent = lv_obj_create(lv_layer_top());
     lv_obj_set_size(parent, LV_SIZE_PCT(100), LV_SIZE_PCT(100));
 
-    lv_obj_remove_style(parent, LV_PART_ANY, LV_STATE_ANY, NULL);
-    lv_obj_set_style_bg_color(parent, LV_PART_MAIN, LV_STATE_DEFAULT, lv_color_grey());
-    lv_obj_set_style_bg_opa(parent, LV_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_50);
+    lv_obj_remove_style_all(parent);
+    lv_obj_set_style_bg_color(parent, lv_color_grey(), 0);
+    lv_obj_set_style_bg_opa(parent, LV_OPA_50, 0);
 
     lv_obj_t * mbox = lv_obj_create_from_class(&lv_msgbox_class, parent);
     LV_ASSERT_MALLOC(mbox);
@@ -58,7 +58,7 @@ lv_obj_t * lv_msgbox_create(const char * title, const char * txt, const char * b
     if(w > 2 * LV_DPI_DEF) w = 2 * LV_DPI_DEF;
 
     lv_obj_set_size(mbox, w, LV_SIZE_CONTENT);
-    lv_obj_set_flex_flow(mbox, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_flow(mbox, LV_FLEX_FLOW_ROW_WRAP);
 
     lv_obj_t * label;
     label = lv_label_create(mbox);

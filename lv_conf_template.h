@@ -206,9 +206,6 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 #endif  /*LV_SPRINTF_CUSTOM*/
 
 #define LV_USE_USER_DATA      1
-#if LV_USE_USER_DATA
-typedef void * lv_user_data_t;
-#endif
 
 /*Garbage Collector settings
  *Used if lvgl is binded to higher level language and the memory is managed by that language*/
@@ -293,8 +290,7 @@ typedef void * lv_user_data_t;
 #define LV_FONT_DEJAVU_16_PERSIAN_HEBREW 0  /*Hebrew, Arabic, Perisan letters and all their forms*/
 #define LV_FONT_SIMSUN_16_CJK            0  /*1000 most common CJK radicals*/
 
-/*Pixel perfect monospace fonts
- *http://pelulamu.net/unscii/*/
+/*Pixel perfect monospace fonts*/
 #define LV_FONT_UNSCII_8        0
 #define LV_FONT_UNSCII_16       0
 
@@ -471,19 +467,23 @@ typedef void * lv_user_data_t;
 # define LV_THEME_DEFAULT_PALETTE_LIGHT     1
 
 /*1: Enable grow on press*/
-# define LV_THEME_DEFAULT_GROW        		1
+# define LV_THEME_DEFAULT_GROW              1
 
 /*Default transition time in [ms]*/
 # define LV_THEME_DEFAULT_TRANSITON_TIME    80
 #endif /*LV_USE_THEME_DEFAULT*/
 
- /*An very simple them that is a good starting point for a custom theme*/
+/*An very simple them that is a good starting point for a custom theme*/
  #define LV_USE_THEME_BASIC    1
 
 /*-----------
  * Layouts
  *----------*/
+
+/*A layout similar to Flexbox in CSS.*/
 #define LV_USE_FLEX     1
+
+/*A layout similar to Grid in CSS.*/
 #define LV_USE_GRID     1
 
 /*==================

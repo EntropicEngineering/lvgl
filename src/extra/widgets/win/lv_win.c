@@ -26,7 +26,13 @@ static void lv_win_constructor(lv_obj_t * obj);
 /**********************
  *  STATIC VARIABLES
  **********************/
-const lv_obj_class_t lv_win_class = {.constructor_cb = lv_win_constructor, .base_class = &lv_obj_class, .instance_size = sizeof(lv_win_t)};
+const lv_obj_class_t lv_win_class = {
+        .constructor_cb = lv_win_constructor,
+        .width_def = LV_SIZE_PCT(100),
+        .height_def = LV_SIZE_PCT(100),
+        .base_class = &lv_obj_class,
+        .instance_size = sizeof(lv_win_t)
+};
 static lv_coord_t create_header_height;
 /**********************
  *      MACROS
@@ -89,6 +95,7 @@ static void lv_win_constructor(lv_obj_t * obj)
     lv_obj_t * header = lv_obj_create(obj);
     lv_obj_set_size(header, LV_SIZE_PCT(100), create_header_height);
     lv_obj_set_flex_flow(header, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_place(header, LV_FLEX_PLACE_START, LV_FLEX_PLACE_CENTER, LV_FLEX_PLACE_CENTER);
 
     lv_obj_t * cont = lv_obj_create(obj);
     lv_obj_set_flex_grow(cont, 1);
