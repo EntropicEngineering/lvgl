@@ -1,4 +1,4 @@
-#include "../../lvgl.h"
+#include "../lv_examples.h"
 #if LV_BUILD_EXAMPLES && LV_USE_ARC
 
 /**
@@ -9,7 +9,7 @@ void lv_example_style_11(void)
     static lv_style_t style;
     lv_style_init(&style);
 
-    lv_style_set_arc_color(&style, lv_color_red());
+    lv_style_set_arc_color(&style, lv_palette_main(LV_PALETTE_RED));
     lv_style_set_arc_width(&style, 4);
 
 

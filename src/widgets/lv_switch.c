@@ -33,9 +33,9 @@
 /**********************
  *  STATIC PROTOTYPES
  **********************/
-static void lv_switch_constructor(lv_obj_t * obj);
-static void lv_switch_event(lv_obj_t * obj, lv_event_t e);
-static void draw_main(lv_obj_t * obj);
+static void lv_switch_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+static void lv_switch_event(const lv_obj_class_t * class_p, lv_event_t * e);
+static void draw_main(lv_event_t * e);
 
 /**********************
  *  STATIC VARIABLES
@@ -45,6 +45,7 @@ const lv_obj_class_t lv_switch_class = {
     .event_cb = lv_switch_event,
     .width_def =  (5 * LV_DPI_DEF) / 11,
     .height_def = LV_DPI_DEF / 4,
+    .group_def = LV_OBJ_CLASS_GROUP_DEF_TRUE,
     .instance_size = sizeof(lv_switch_t),
     .base_class = &lv_obj_class
 };
@@ -67,8 +68,9 @@ lv_obj_t * lv_switch_create(lv_obj_t * parent)
  *   STATIC FUNCTIONS
  **********************/
 
-static void lv_switch_constructor(lv_obj_t * obj)
+static void lv_switch_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 {
+    LV_UNUSED(class_p);
     LV_TRACE_OBJ_CREATE("begin");
 
    lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
@@ -78,15 +80,20 @@ static void lv_switch_constructor(lv_obj_t * obj)
 }
 
 
-static void lv_switch_event(lv_obj_t * obj, lv_event_t e)
+static void lv_switch_event(const lv_obj_class_t * class_p, lv_event_t * e)
 {
+    LV_UNUSED(class_p);
+
     lv_res_t res;
 
     /*Call the ancestor's event handler*/
-    res = lv_obj_event_base(MY_CLASS, obj, e);
+    res = lv_obj_event_base(MY_CLASS, e);
     if(res != LV_RES_OK) return;
 
-    if(e == LV_EVENT_REFR_EXT_DRAW_SIZE) {
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t * obj = lv_event_get_target(e);
+
+    if(code == LV_EVENT_REFR_EXT_DRAW_SIZE) {
         lv_coord_t knob_left = lv_obj_get_style_pad_left(obj,   LV_PART_KNOB);
         lv_coord_t knob_right = lv_obj_get_style_pad_right(obj,  LV_PART_KNOB);
         lv_coord_t knob_top = lv_obj_get_style_pad_top(obj,    LV_PART_KNOB);
@@ -97,25 +104,26 @@ static void lv_switch_event(lv_obj_t * obj, lv_event_t e)
         knob_size += 2;         /*For rounding error*/
         knob_size += lv_obj_calculate_ext_draw_size(obj, LV_PART_KNOB);
 
-        lv_coord_t * s = lv_event_get_param();
+        lv_coord_t * s = lv_event_get_param(e);
         *s = LV_MAX(*s, knob_size);
         *s = LV_MAX(*s, lv_obj_calculate_ext_draw_size(obj, LV_PART_INDICATOR));
     }
-    else if(e == LV_EVENT_CLICKED) {
+    else if(code == LV_EVENT_CLICKED) {
         uint32_t v = lv_obj_get_state(obj) & LV_STATE_CHECKED ? 1 : 0;
         res = lv_event_send(obj, LV_EVENT_VALUE_CHANGED, &v);
         if(res != LV_RES_OK) return;
 
         lv_obj_invalidate(obj);
     }
-    else if(e == LV_EVENT_DRAW_MAIN) {
-        draw_main(obj);
+    else if(code == LV_EVENT_DRAW_MAIN) {
+        draw_main(e);
     }
 }
 
-static void draw_main(lv_obj_t * obj)
+static void draw_main(lv_event_t * e)
 {
-    const lv_area_t * clip_area = lv_event_get_param();
+    lv_obj_t * obj = lv_event_get_target(e);
+    const lv_area_t * clip_area = lv_event_get_param(e);
     lv_bidi_dir_t base_dir = lv_obj_get_base_dir(obj);
 
     /*Calculate the indicator area*/

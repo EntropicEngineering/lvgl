@@ -110,13 +110,6 @@ lv_obj_t * lv_keyboard_get_textarea(const lv_obj_t * kb);
 lv_keyboard_mode_t lv_keyboard_get_mode(const lv_obj_t * kb);
 
 /**
- * Get the current cursor manage mode.
- * @param kb pointer to a Keyboard object
- * @return true: show cursor on the current text area, false: hide cursor
- */
-bool lv_keyboard_get_cursor_manage(const lv_obj_t * kb);
-
-/**
  * Get the current map of a keyboard
  * @param kb pointer to a keyboard object
  * @return the current map
@@ -137,7 +130,7 @@ static inline const char ** lv_keyboard_get_map_array(const lv_obj_t * kb)
  * @param kb pointer to a  keyboard
  * @param event the triggering event
  */
-void lv_keyboard_def_event_cb(lv_obj_t * kb, lv_event_t event);
+void lv_keyboard_def_event_cb(lv_event_t * e);
 
 /**********************
  *      MACROS

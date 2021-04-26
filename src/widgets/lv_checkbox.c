@@ -26,10 +26,10 @@
 /**********************
  *  STATIC PROTOTYPES
  **********************/
-static void lv_checkbox_constructor(lv_obj_t * obj);
-static void lv_checkbox_destructor(lv_obj_t * obj);
-static void lv_checkbox_event(lv_obj_t * obj, lv_event_t e);
-static void lv_checkbox_draw(lv_obj_t * obj);
+static void lv_checkbox_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+static void lv_checkbox_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+static void lv_checkbox_event(const lv_obj_class_t * class_p, lv_event_t * e);
+static void lv_checkbox_draw(lv_event_t * e);
 
 /**********************
  *  STATIC VARIABLES
@@ -40,6 +40,7 @@ const lv_obj_class_t lv_checkbox_class = {
     .event_cb = lv_checkbox_event,
     .width_def = LV_SIZE_CONTENT,
     .height_def = LV_SIZE_CONTENT,
+    .group_def = LV_OBJ_CLASS_GROUP_DEF_TRUE,
     .instance_size = sizeof(lv_checkbox_t),
     .base_class = &lv_obj_class
 };
@@ -110,8 +111,9 @@ const char * lv_checkbox_get_text(const lv_obj_t * obj)
  *   STATIC FUNCTIONS
  **********************/
 
-static void lv_checkbox_constructor(lv_obj_t * obj)
+static void lv_checkbox_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 {
+    LV_UNUSED(class_p);
     LV_TRACE_OBJ_CREATE("begin");
 
     lv_checkbox_t * cb = (lv_checkbox_t *)obj;
@@ -120,31 +122,41 @@ static void lv_checkbox_constructor(lv_obj_t * obj)
     cb->static_txt = 1;
     lv_obj_add_flag(obj, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_flag(obj, LV_OBJ_FLAG_CHECKABLE);
+    lv_obj_add_flag(obj, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
 
     LV_TRACE_OBJ_CREATE("finished");
 }
 
-static void lv_checkbox_destructor(lv_obj_t * obj)
+static void lv_checkbox_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 {
+    LV_UNUSED(class_p);
+    LV_TRACE_OBJ_CREATE("begin");
+
     lv_checkbox_t * cb = (lv_checkbox_t *)obj;
     if(!cb->static_txt) {
         lv_mem_free(cb->txt);
         cb->txt = NULL;
     }
+    LV_TRACE_OBJ_CREATE("finished");
 }
 
-static void lv_checkbox_event(lv_obj_t * obj, lv_event_t e)
+static void lv_checkbox_event(const lv_obj_class_t * class_p, lv_event_t * e)
 {
+    LV_UNUSED(class_p);
+
     lv_res_t res;
     /*Call the ancestor's event handler*/
-    res = lv_obj_event_base(MY_CLASS, obj, e);
+    res = lv_obj_event_base(MY_CLASS, e);
     if(res != LV_RES_OK) return;
 
-    if (e == LV_EVENT_PRESSED || e == LV_EVENT_RELEASED) {
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t * obj = lv_event_get_target(e);
+
+    if (code == LV_EVENT_PRESSED || code == LV_EVENT_RELEASED) {
        lv_obj_invalidate(obj);
     }
-    else if (e == LV_EVENT_GET_SELF_SIZE) {
-        lv_point_t * p = lv_event_get_param();
+    else if (code == LV_EVENT_GET_SELF_SIZE) {
+        lv_point_t * p = lv_event_get_param(e);
         lv_checkbox_t * cb = (lv_checkbox_t *)obj;
 
         const lv_font_t * font = lv_obj_get_style_text_font(obj, LV_PART_MAIN);
@@ -168,27 +180,28 @@ static void lv_checkbox_event(lv_obj_t * obj, lv_event_t e)
         p->x = marker_size.x + txt_size.x + bg_colp;
         p->y = LV_MAX(marker_size.y, txt_size.y);
     }
-    else if(e == LV_EVENT_REFR_EXT_DRAW_SIZE) {
-        lv_coord_t *s = lv_event_get_param();;
+    else if(code == LV_EVENT_REFR_EXT_DRAW_SIZE) {
+        lv_coord_t *s = lv_event_get_param(e);;
         lv_coord_t m = lv_obj_calculate_ext_draw_size(obj, LV_PART_INDICATOR);
         *s = LV_MAX(*s, m);
     }
-    else if(e == LV_EVENT_RELEASED) {
+    else if(code == LV_EVENT_RELEASED) {
         uint32_t v = lv_obj_get_state(obj) & LV_STATE_CHECKED ? 1 : 0;
         res = lv_event_send(obj, LV_EVENT_VALUE_CHANGED, &v);
         if(res != LV_RES_OK) return;
 
         lv_obj_invalidate(obj);
-    } else if(e == LV_EVENT_DRAW_MAIN) {
-        lv_checkbox_draw(obj);
+    } else if(code == LV_EVENT_DRAW_MAIN) {
+        lv_checkbox_draw(e);
     }
 }
 
-static void lv_checkbox_draw(lv_obj_t * obj)
+static void lv_checkbox_draw(lv_event_t * e)
 {
+    lv_obj_t * obj = lv_event_get_target(e);
     lv_checkbox_t * cb = (lv_checkbox_t *)obj;
 
-    const lv_area_t * clip_area = lv_event_get_param();
+    const lv_area_t * clip_area = lv_event_get_param(e);
     const lv_font_t * font = lv_obj_get_style_text_font(obj, LV_PART_MAIN);
     lv_coord_t font_h = lv_font_get_line_height(font);
 

@@ -1,4 +1,4 @@
-#include "../../../lvgl.h"
+#include "../../lv_examples.h"
 #if LV_USE_IMG && LV_BUILD_EXAMPLES
 
 static void ofs_y_anim(void * img, int32_t v)
@@ -15,7 +15,7 @@ void lv_example_img_4(void)
 
     static lv_style_t style;
     lv_style_init(&style);
-    lv_style_set_bg_color(&style, lv_color_yellow());
+    lv_style_set_bg_color(&style, lv_palette_main(LV_PALETTE_YELLOW));
     lv_style_set_bg_opa(&style, LV_OPA_COVER);
     lv_style_set_img_recolor_opa(&style, LV_OPA_COVER);
     lv_style_set_img_recolor(&style, lv_color_black());

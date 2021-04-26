@@ -29,8 +29,8 @@
 /**********************
  *  STATIC PROTOTYPES
  **********************/
-static void lv_led_constructor(lv_obj_t * obj);
-static void lv_led_event(lv_obj_t * obj, lv_event_t e);
+static void lv_led_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+static void lv_led_event(const lv_obj_class_t * class_p, lv_event_t * e);
 
 /**********************
  *  STATIC VARIABLES
@@ -147,23 +147,28 @@ uint8_t lv_led_get_brightness(const lv_obj_t * obj)
  *   STATIC FUNCTIONS
  **********************/
 
-static void lv_led_constructor(lv_obj_t * obj)
+static void lv_led_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 {
+    LV_UNUSED(class_p);
     lv_led_t * led = (lv_led_t *)obj;
     led->color = lv_theme_get_color_primary(obj);
     led->bright = LV_LED_BRIGHT_MAX;
     led->bright = LV_LED_BRIGHT_MAX;
 }
 
-static void lv_led_event(lv_obj_t * obj, lv_event_t e)
+static void lv_led_event(const lv_obj_class_t * class_p, lv_event_t * e)
 {
+    LV_UNUSED(class_p);
+
     lv_res_t res;
 
     /* Call the ancestor's event handler */
-    res = lv_obj_event_base(MY_CLASS, obj, e);
+    res = lv_obj_event_base(MY_CLASS, e);
     if(res != LV_RES_OK) return;
 
-    if(e == LV_EVENT_DRAW_MAIN) {
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t * obj = lv_event_get_target(e);
+    if(code == LV_EVENT_DRAW_MAIN) {
         /*Make darker colors in a temporary style according to the brightness*/
         lv_led_t * led = (lv_led_t *)obj;
 
@@ -192,7 +197,7 @@ static void lv_led_event(lv_obj_t * obj, lv_event_t e)
         rect_dsc.shadow_spread = ((led->bright - LV_LED_BRIGHT_MIN) * rect_dsc.shadow_spread) /
                 (LV_LED_BRIGHT_MAX - LV_LED_BRIGHT_MIN);
 
-        const lv_area_t * clip_area = lv_event_get_param();
+        const lv_area_t * clip_area = lv_event_get_param(e);
         lv_draw_rect(&obj->coords, clip_area, &rect_dsc);
     }
 }

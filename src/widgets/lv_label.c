@@ -34,10 +34,10 @@
 /**********************
  *  STATIC PROTOTYPES
  **********************/
-static void lv_label_constructor(lv_obj_t * obj);
-static void lv_label_destructor(lv_obj_t * obj);
-static void lv_label_event_cb(lv_obj_t * obj, lv_event_t e);
-static void draw_main(lv_obj_t * obj);
+static void lv_label_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+static void lv_label_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+static void lv_label_event(const lv_obj_class_t * class_p, lv_event_t * e);
+static void draw_main(lv_event_t * e);
 
 static void lv_label_refr_text(lv_obj_t * obj);
 static void lv_label_revert_dots(lv_obj_t * label);
@@ -55,7 +55,7 @@ static void set_ofs_y_anim(void * obj, int32_t v);
 const lv_obj_class_t lv_label_class = {
     .constructor_cb = lv_label_constructor,
     .destructor_cb = lv_label_destructor,
-    .event_cb = lv_label_event_cb,
+    .event_cb = lv_label_event,
     .instance_size = sizeof(lv_label_t),
     .base_class = &lv_obj_class
 };
@@ -294,10 +294,10 @@ void lv_label_get_letter_pos(const lv_obj_t * obj, uint32_t char_id, lv_point_t 
                 pos->x = 0;
                 break;
             case LV_TEXT_ALIGN_RIGHT:
-                pos->x = lv_obj_get_width_fit(obj);
+                pos->x = lv_obj_get_content_width(obj);
                 break;
             case LV_TEXT_ALIGN_CENTER:
-                pos->x = lv_obj_get_width_fit(obj) / 2;
+                pos->x = lv_obj_get_content_width(obj) / 2;
                 break;
         }
         return;
@@ -505,8 +505,8 @@ uint32_t lv_label_get_letter_on(const lv_obj_t * obj, lv_point_t * pos_in)
         logical_pos = _lv_bidi_get_logical_pos(&txt[line_start], NULL,
                                                txt_len, lv_obj_get_base_dir(obj), cid, &is_rtl);
         if(is_rtl) logical_pos++;
-        lv_mem_buf_release(bidi_txt);
     }
+	lv_mem_buf_release(bidi_txt);
 #else
     logical_pos = _lv_txt_encoded_get_char_id(bidi_txt, i);
 #endif
@@ -692,8 +692,9 @@ void lv_label_cut_text(lv_obj_t * obj, uint32_t pos, uint32_t cnt)
  *   STATIC FUNCTIONS
  **********************/
 
-static void lv_label_constructor(lv_obj_t * obj)
+static void lv_label_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 {
+    LV_UNUSED(class_p);
     LV_TRACE_OBJ_CREATE("begin");
 
     lv_label_t * label = (lv_label_t *)obj;
@@ -727,8 +728,9 @@ static void lv_label_constructor(lv_obj_t * obj)
     LV_TRACE_OBJ_CREATE("finished");
 }
 
-static void lv_label_destructor(lv_obj_t * obj)
+static void lv_label_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 {
+    LV_UNUSED(class_p);
     lv_label_t * label = (lv_label_t *)obj;
 
     lv_label_dot_tmp_free(obj);
@@ -736,39 +738,45 @@ static void lv_label_destructor(lv_obj_t * obj)
     label->text = NULL;
 }
 
-static void lv_label_event_cb(lv_obj_t * obj, lv_event_t e)
+static void lv_label_event(const lv_obj_class_t * class_p, lv_event_t * e)
 {
+    LV_UNUSED(class_p);
+
     lv_res_t res;
 
     /*Call the ancestor's event handler*/
-    res = lv_obj_event_base(MY_CLASS, obj, e);
+    res = lv_obj_event_base(MY_CLASS, e);
     if(res != LV_RES_OK) return;
 
-    if(e == LV_EVENT_STYLE_CHANGED) {
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t * obj = lv_event_get_target(e);
+
+    if(code == LV_EVENT_STYLE_CHANGED) {
         /*Revert dots for proper refresh*/
         lv_label_revert_dots(obj);
         lv_label_refr_text(obj);
     }
-    else if(e == LV_EVENT_SIZE_CHANGED) {
+    else if(code == LV_EVENT_SIZE_CHANGED) {
         lv_label_revert_dots(obj);
         lv_label_refr_text(obj);
     }
-    else if(e == LV_EVENT_BASE_DIR_CHANGED) {
+    else if(code == LV_EVENT_BASE_DIR_CHANGED) {
 #if LV_USE_BIDI
         lv_label_t * label = (lv_label_t *)obj;
         if(label->static_txt == 0) lv_label_set_text(obj, NULL);
 #endif
     }
-    else if(e == LV_EVENT_DRAW_MAIN) {
-        draw_main(obj);
+    else if(code == LV_EVENT_DRAW_MAIN) {
+        draw_main(e);
     }
 }
 
 
-static void draw_main(lv_obj_t * obj)
+static void draw_main(lv_event_t * e)
 {
+    lv_obj_t * obj = lv_event_get_target(e);
     lv_label_t * label = (lv_label_t *)obj;
-    const lv_area_t * clip_area = lv_event_get_param();
+    const lv_area_t * clip_area = lv_event_get_param(e);
 
     lv_area_t txt_coords;
     get_txt_coords(obj, &txt_coords);
