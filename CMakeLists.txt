@@ -59,7 +59,7 @@ elseif(ZEPHYR_BASE)
 	endif()
 
 elseif(LIBPRV)
-    file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
+    file(GLOB_RECURSE SOURCES src/*.c)
     target_sources("${PROJECT_NAME}" PRIVATE ${SOURCES})
     target_include_directories("${PROJECT_NAME}" PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 
