@@ -1072,6 +1072,14 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 #  endif
 #endif
 
+#ifndef LV_USE_ANIMIMG
+#  ifdef CONFIG_LV_USE_ANIMIMG
+#    define LV_USE_ANIMIMG CONFIG_LV_USE_ANIMIMG
+#  else
+#    define  LV_USE_ANIMIMG      1
+#  endif
+#endif
+
 #ifndef LV_USE_BAR
 #  ifdef CONFIG_LV_USE_BAR
 #    define LV_USE_BAR CONFIG_LV_USE_BAR
@@ -1144,11 +1152,11 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 #  endif
 #endif
 #if LV_USE_LABEL
-#ifndef LV_LABEL_TEXT_SEL
-#  ifdef CONFIG_LV_LABEL_TEXT_SEL
-#    define LV_LABEL_TEXT_SEL CONFIG_LV_LABEL_TEXT_SEL
+#ifndef LV_LABEL_TEXT_SELECTION
+#  ifdef CONFIG_LV_LABEL_TEXT_SELECTION
+#    define LV_LABEL_TEXT_SELECTION CONFIG_LV_LABEL_TEXT_SELECTION
 #  else
-#    define  LV_LABEL_TEXT_SEL         1   /*Enable selecting text of the label*/
+#    define  LV_LABEL_TEXT_SELECTION         1   /*Enable selecting text of the label*/
 #  endif
 #endif
 #ifndef LV_LABEL_LONG_TXT_HINT
@@ -1385,6 +1393,14 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 #  endif
 #endif
 
+#ifndef LV_USE_SPAN
+#  ifdef CONFIG_LV_USE_SPAN
+#    define LV_USE_SPAN CONFIG_LV_USE_SPAN
+#  else
+#    define  LV_USE_SPAN          1
+#  endif
+#endif
+
 /*-----------
  * Themes
  *----------*/
@@ -1398,12 +1414,12 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 #endif
 #if LV_USE_THEME_DEFAULT
 
-/*1: Light mode; 0: Dark mode*/
-#ifndef LV_THEME_DEFAULT_PALETTE_LIGHT
-#  ifdef CONFIG_LV_THEME_DEFAULT_PALETTE_LIGHT
-#    define LV_THEME_DEFAULT_PALETTE_LIGHT CONFIG_LV_THEME_DEFAULT_PALETTE_LIGHT
+/*0: Light mode; 1: Dark mode*/
+#ifndef LV_THEME_DEFAULT_DARK
+#  ifdef CONFIG_LV_THEME_DEFAULT_DARK
+#    define LV_THEME_DEFAULT_DARK CONFIG_LV_THEME_DEFAULT_DARK
 #  else
-#    define  LV_THEME_DEFAULT_PALETTE_LIGHT     1
+#    define  LV_THEME_DEFAULT_DARK     0
 #  endif
 #endif
 

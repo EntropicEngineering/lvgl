@@ -145,11 +145,12 @@ lv_coord_t lv_obj_get_scroll_bottom(lv_obj_t * obj)
 
     lv_coord_t pad_top = lv_obj_get_style_pad_top(obj, LV_PART_MAIN);
     lv_coord_t pad_bottom = lv_obj_get_style_pad_bottom(obj, LV_PART_MAIN);
+    lv_coord_t border_width = lv_obj_get_style_border_width(obj, LV_PART_MAIN);
 
-    child_res -= (obj->coords.y2 - pad_bottom);
+    child_res -= (obj->coords.y2 - pad_bottom - border_width);
 
     lv_coord_t self_h = lv_obj_get_self_height(obj);
-    self_h = self_h - (lv_obj_get_height(obj) - pad_top - pad_bottom);
+    self_h = self_h - (lv_obj_get_height(obj) - pad_top - pad_bottom - 2 * border_width);
     self_h -= lv_obj_get_scroll_y(obj);
     return LV_MAX(child_res, self_h);
 }
@@ -299,10 +300,12 @@ void lv_obj_scroll_to_x(lv_obj_t * obj, lv_coord_t x, lv_anim_enable_t anim_en)
 
     /*Don't let scroll more then naturally possible by the size of the content*/
     if(x < 0) x = 0;
-    lv_coord_t  scroll_max = lv_obj_get_scroll_left(obj) + lv_obj_get_scroll_right(obj);
-    if(scroll_max < 0) scroll_max = 0;
+    if(x > 0) {
+        lv_coord_t  scroll_max = lv_obj_get_scroll_left(obj) + lv_obj_get_scroll_right(obj);
+        if(scroll_max < 0) scroll_max = 0;
 
-    if(x > scroll_max) x = scroll_max;
+        if(x > scroll_max) x = scroll_max;
+    }
 
     lv_coord_t scroll_x = lv_obj_get_scroll_x(obj);
     lv_coord_t diff = -x + scroll_x;
@@ -316,9 +319,11 @@ void lv_obj_scroll_to_y(lv_obj_t * obj, lv_coord_t y, lv_anim_enable_t anim_en)
 
     /*Don't let scroll more then naturally possible by the size of the content*/
     if(y < 0) y = 0;
-    lv_coord_t  scroll_max = lv_obj_get_scroll_top(obj) + lv_obj_get_scroll_bottom(obj);
-    if(scroll_max < 0) scroll_max = 0;
-    if(y > scroll_max) y = scroll_max;
+    if(y > 0) {
+        lv_coord_t  scroll_max = lv_obj_get_scroll_top(obj) + lv_obj_get_scroll_bottom(obj);
+        if(scroll_max < 0) scroll_max = 0;
+        if(y > scroll_max) y = scroll_max;
+    }
 
     lv_coord_t scroll_y = lv_obj_get_scroll_y(obj);
     lv_coord_t diff = -y + scroll_y;
@@ -375,7 +380,7 @@ void lv_obj_get_scrollbar_area(lv_obj_t * obj, lv_area_t * hor_area, lv_area_t *
 
     if(lv_obj_has_flag(obj, LV_OBJ_FLAG_SCROLLABLE) == false) return;
 
-    lv_indev_scroll_dir_t sm = lv_obj_get_scrollbar_mode(obj);
+    lv_dir_t sm = lv_obj_get_scrollbar_mode(obj);
     if(sm == LV_SCROLLBAR_MODE_OFF)  return;
 
     /*If there is no indev scrolling this object but `mode==active` return*/
@@ -393,13 +398,13 @@ void lv_obj_get_scrollbar_area(lv_obj_t * obj, lv_area_t * hor_area, lv_area_t *
     lv_coord_t sl = lv_obj_get_scroll_left(obj);
     lv_coord_t sr = lv_obj_get_scroll_right(obj);
 
-    lv_indev_scroll_dir_t dir = lv_obj_get_scroll_dir(obj);
+    lv_dir_t dir = lv_obj_get_scroll_dir(obj);
 
     bool ver_draw = false;
     if((dir & LV_DIR_VER) &&
             ((sm == LV_SCROLLBAR_MODE_ON) ||
                     (sm == LV_SCROLLBAR_MODE_AUTO && (st > 0 || sb > 0)) ||
-                    (sm == LV_SCROLLBAR_MODE_ACTIVE && lv_indev_get_scroll_dir(indev) == LV_INDEV_SCROLL_DIR_VER))) {
+                    (sm == LV_SCROLLBAR_MODE_ACTIVE && lv_indev_get_scroll_dir(indev) == LV_DIR_VER))) {
         ver_draw = true;
     }
 
@@ -408,7 +413,7 @@ void lv_obj_get_scrollbar_area(lv_obj_t * obj, lv_area_t * hor_area, lv_area_t *
     if((dir & LV_DIR_HOR) &&
             ((sm == LV_SCROLLBAR_MODE_ON) ||
                     (sm == LV_SCROLLBAR_MODE_AUTO && (sl > 0 || sr > 0)) ||
-                    (sm == LV_SCROLLBAR_MODE_ACTIVE && lv_indev_get_scroll_dir(indev) == LV_INDEV_SCROLL_DIR_HOR))) {
+                    (sm == LV_SCROLLBAR_MODE_ACTIVE && lv_indev_get_scroll_dir(indev) == LV_DIR_HOR))) {
         hor_draw = true;
     }
 

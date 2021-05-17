@@ -110,6 +110,7 @@ void lv_anim_start(lv_anim_t * a)
     a->time_orig = a->time;
     a->run_round = anim_run_round;
     lv_memcpy(new_anim, a, sizeof(lv_anim_t));
+    if(a->var == a) new_anim->var = new_anim;
 
     /*Set the start value*/
     if(new_anim->early_apply) {
@@ -335,7 +336,7 @@ int32_t lv_anim_path_overshoot(const lv_anim_t * a)
 int32_t lv_anim_path_bounce(const lv_anim_t * a)
 {
     /*Calculate the current step*/
-    uint32_t t = lv_map(a->act_time, 0, a->time, 0, 1024);
+    int32_t t = lv_map(a->act_time, 0, a->time, 0, 1024);
     int32_t diff = (a->end_value - a->start_value);
 
     /*3 bounces has 5 parts: 3 down and 2 up. One part is t / 5 long*/
@@ -372,6 +373,7 @@ int32_t lv_anim_path_bounce(const lv_anim_t * a)
     }
 
     if(t > 1024) t = 1024;
+    if(t < 0) t = 0;
     int32_t step = lv_bezier3(t, 1024, 800, 500, 0);
 
     int32_t new_value;
@@ -427,13 +429,14 @@ static void anim_timer(lv_timer_t * param)
 
             /*The animation will run now for the first time. Call `start_cb`*/
             int32_t new_act_time = a->act_time + elaps;
-            if(a->act_time <= 0 && new_act_time >= 0) {
+            if(!a->start_cb_called && a->act_time <= 0 && new_act_time >= 0) {
                 if(a->early_apply == 0 && a->get_value_cb) {
                     int32_t v_ofs  = a->get_value_cb(a);
                     a->start_value += v_ofs;
                     a->end_value += v_ofs;
                 }
                 if(a->start_cb) a->start_cb(a);
+                a->start_cb_called = 1;
             }
             a->act_time += elaps;
             if(a->act_time >= 0) {
@@ -519,7 +522,7 @@ static void anim_mark_list_change(void)
 {
     anim_list_changed = true;
     if(_lv_ll_get_head(&LV_GC_ROOT(_lv_anim_ll)) == NULL)
-        lv_timer_pause(_lv_anim_tmr, true);
+        lv_timer_pause(_lv_anim_tmr);
     else
-        lv_timer_pause(_lv_anim_tmr, false);
+        lv_timer_resume(_lv_anim_tmr);
 }

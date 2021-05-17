@@ -12,16 +12,20 @@
    :maxdepth: 2
 
    object
+   coords
+   style
+   style-props
+   scroll
    layer
    event
-   style
    indev
    display
    font
    image
    file-system
    animation
-   task
+   timer
    drawing
+   new_widget
 ```
 

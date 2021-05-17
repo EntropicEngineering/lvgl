@@ -108,11 +108,11 @@ static lv_img_dsc_t my_img_dsc = {
 
 If the color format is `LV_IMG_CF_TRUE_COLOR_ALPHA` you can set `data_size` like `80 * 60 * LV_IMG_PX_SIZE_ALPHA_BYTE`.
 
-Another (possibly simpler) option to create and display an image at run-time is to use the [Canvas](/widgets/canvas) object.
+Another (possibly simpler) option to create and display an image at run-time is to use the [Canvas](/widgets/core/canvas) object.
 
 ### Use images
 
-The simplest way to use an image in LVGL is to display it with an [lv_img](/widgets/img) object:
+The simplest way to use an image in LVGL is to display it with an [lv_img](/widgets/core/img) object:
 
 ```c
 lv_obj_t * icon = lv_img_create(lv_scr_act(), NULL);
@@ -319,39 +319,12 @@ To do this, use `lv_img_cache_invalidate_src(&my_png)`. If `NULL` is passed as a
 
 ## API
 
-### Image decoder
-
-```eval_rst
-
-.. doxygenfile:: lv_img_decoder.h
-  :project: lvgl
-
-```
-
-
-### Image cache
-
-```eval_rst
-
-.. doxygenfile:: lv_img_cache.h
-  :project: lvgl
-
-```
 
 ### Image buffer
 
 ```eval_rst
 
 .. doxygenfile:: lv_img_buf.h
-  :project: lvgl
-
-```
-
-### Image draw
-
-```eval_rst
-
-.. doxygenfile:: lv_draw_img.h
   :project: lvgl
 
 ```

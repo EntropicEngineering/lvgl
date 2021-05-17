@@ -68,11 +68,13 @@ typedef struct _lv_obj_class_t {
 
 /**
  * Create an object form a class descriptor
- * @param class_p pointer to a class
- * @param parent pointer to an object where the new object should be created
- * @return pointer to the created object
+ * @param class_p   pointer to a class
+ * @param parent    pointer to an object where the new object should be created
+ * @return          pointer to the created object
  */
-struct _lv_obj_t * lv_obj_create_from_class(const struct _lv_obj_class_t * class_p, struct _lv_obj_t * parent);
+struct _lv_obj_t * lv_obj_class_create_obj(const struct _lv_obj_class_t * class_p, struct _lv_obj_t * parent);
+
+void lv_obj_class_init_obj(struct _lv_obj_t * obj);
 
 void _lv_obj_destructor(struct _lv_obj_t * obj);
 

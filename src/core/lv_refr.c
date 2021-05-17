@@ -131,7 +131,7 @@ void _lv_inv_area(lv_disp_t * disp, const lv_area_t * area_p)
     if(disp->driver->full_refresh) {
         disp->inv_areas[0] = scr_area;
         disp->inv_p = 1;
-        lv_timer_pause(disp->refr_timer, false);
+        lv_timer_resume(disp->refr_timer);
         return;
     }
 
@@ -152,7 +152,7 @@ void _lv_inv_area(lv_disp_t * disp, const lv_area_t * area_p)
         lv_area_copy(&disp->inv_areas[disp->inv_p], &scr_area);
     }
     disp->inv_p++;
-    lv_timer_pause(disp->refr_timer, false);
+    lv_timer_resume(disp->refr_timer);
 }
 
 /**
@@ -188,12 +188,12 @@ void _lv_disp_refr_timer(lv_timer_t * tmr)
 
     disp_refr = tmr->user_data;
 
-#if LV_USE_PERF_MONITOR == 0
+#if LV_USE_PERF_MONITOR == 0 && LV_USE_MEM_MONITOR == 0
     /**
      * Ensure the timer does not run again automatically.
      * This is done before refreshing in case refreshing invalidates something else.
      */
-    lv_timer_pause(tmr, true);
+    lv_timer_pause(tmr);
 #endif
 
     /*Refresh the screen's layout if required*/
@@ -574,10 +574,10 @@ static lv_obj_t * lv_refr_get_top_obj(const lv_area_t * area_p, lv_obj_t * obj)
     /*If this object is fully cover the draw area check the children too*/
     if(_lv_area_is_in(area_p, &obj->coords, 0) && lv_obj_has_flag(obj, LV_OBJ_FLAG_HIDDEN) == false) {
         lv_cover_check_info_t info;
-        info.res = LV_DRAW_RES_COVER;
+        info.res = LV_COVER_RES_COVER;
         info.area = area_p;
         lv_event_send(obj, LV_EVENT_COVER_CHECK, &info);
-        if(info.res == LV_DRAW_RES_MASKED) return NULL;
+        if(info.res == LV_COVER_RES_MASKED) return NULL;
 
         uint32_t i;
         for(i = 0; i < lv_obj_get_child_cnt(obj); i++) {
@@ -592,7 +592,7 @@ static lv_obj_t * lv_refr_get_top_obj(const lv_area_t * area_p, lv_obj_t * obj)
 
         /*If no better children use this object*/
         if(found_p == NULL) {
-            if(info.res == LV_DRAW_RES_COVER) {
+            if(info.res == LV_COVER_RES_COVER) {
                 found_p = obj;
             }
         }

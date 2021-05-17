@@ -68,7 +68,12 @@ void lv_obj_set_y(struct _lv_obj_t * obj, lv_coord_t y);
  */
 void lv_obj_set_size(struct _lv_obj_t * obj, lv_coord_t w, lv_coord_t h);
 
-void lv_obj_refr_size(struct _lv_obj_t * obj);
+/**
+ * Recalculate the size of the object
+ * @param obj       pointer to an object
+ * @return          true: the size has been changed
+ */
+bool lv_obj_refr_size(struct _lv_obj_t * obj);
 
 /**
  * Set the width of an object
@@ -95,14 +100,14 @@ void lv_obj_set_width(struct _lv_obj_t * obj, lv_coord_t w);
 void lv_obj_set_height(struct _lv_obj_t * obj, lv_coord_t h);
 
 /**
- * Set the width reduced by the left and right padding.
+ * Set the width reduced by the left and right padding and the border width.
  * @param obj       pointer to an object
  * @param w         the width without paddings in pixels
  */
 void lv_obj_set_content_width(struct _lv_obj_t * obj, lv_coord_t w);
 
 /**
- * Set the height reduced by the top and bottom padding.
+ * Set the height reduced by the top and bottom padding and the border width.
  * @param obj       pointer to an object
  * @param h         the height without paddings in pixels
  */
@@ -245,21 +250,21 @@ lv_coord_t lv_obj_get_width(const struct _lv_obj_t * obj);
 lv_coord_t lv_obj_get_height(const struct _lv_obj_t * obj);
 
 /**
- * Get the width reduced by the left and right padding.
+ * Get the width reduced by the left and right padding and the border width.
  * @param obj       pointer to an object
  * @return          the width which still fits into its parent without causing overflow (making the parent scrollable)
  */
 lv_coord_t lv_obj_get_content_width(const struct _lv_obj_t * obj);
 
 /**
- * Get the height reduced by the top an bottom padding.
+ * Get the height reduced by the top an bottom padding and the border width.
  * @param obj       pointer to an object
  * @return          the height which still fits into the parent without causing overflow (making the parent scrollable)
  */
 lv_coord_t lv_obj_get_content_height(const struct _lv_obj_t * obj);
 
 /**
- * Get the area reduced by the paddings.
+ * Get the area reduced by the paddings and the border width.
  * @param obj       pointer to an object
  * @param area      the area which still fits into the parent without causing overflow (making the parent scrollable)
  */
@@ -272,7 +277,7 @@ void lv_obj_get_content_coords(const struct _lv_obj_t * obj, lv_area_t * area);
  * @note            This size independent from the real size of the widget.
  *                  It just tells how large the internal ("virtual") content is.
  */
-lv_coord_t lv_obj_get_self_width(struct _lv_obj_t * obj);
+lv_coord_t lv_obj_get_self_width(const struct _lv_obj_t * obj);
 
 /**
  * Get the height occupied by the "parts" of the widget. E.g. the height of all rows of a table.
@@ -281,14 +286,14 @@ lv_coord_t lv_obj_get_self_width(struct _lv_obj_t * obj);
  * @note            This size independent from the real size of the widget.
  *                  It just tells how large the internal ("virtual") content is.
  */
-lv_coord_t lv_obj_get_self_height(struct _lv_obj_t * obj);
+lv_coord_t lv_obj_get_self_height(const struct _lv_obj_t * obj);
 
 /**
  * Handle if the size of the internal ("virtual") content of an object has changed.
  * @param obj       pointer to an object
  * @return          false: nothing happened; true: refresh happened
  */
-bool lv_obj_handle_self_size_chg(struct _lv_obj_t * obj);
+bool lv_obj_refresh_self_size(struct _lv_obj_t * obj);
 
 void lv_obj_refr_pos(struct _lv_obj_t * obj);
 

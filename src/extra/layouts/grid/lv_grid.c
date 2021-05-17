@@ -76,8 +76,8 @@ lv_style_prop_t LV_STYLE_GRID_COLUMN_DSC_ARRAY;
 lv_style_prop_t LV_STYLE_GRID_COLUMN_ALIGN;
 lv_style_prop_t LV_STYLE_GRID_ROW_DSC_ARRAY;
 lv_style_prop_t LV_STYLE_GRID_ROW_ALIGN;
-lv_style_prop_t LV_STYLE_GRID_CELL_COL_POS;
-lv_style_prop_t LV_STYLE_GRID_CELL_COL_SPAN;
+lv_style_prop_t LV_STYLE_GRID_CELL_COLUMN_POS;
+lv_style_prop_t LV_STYLE_GRID_CELL_COLUMN_SPAN;
 lv_style_prop_t LV_STYLE_GRID_CELL_X_ALIGN;
 lv_style_prop_t LV_STYLE_GRID_CELL_ROW_POS;
 lv_style_prop_t LV_STYLE_GRID_CELL_ROW_SPAN;
@@ -107,8 +107,8 @@ void lv_grid_init(void)
 
     LV_STYLE_GRID_CELL_ROW_SPAN = lv_style_register_prop() | LV_STYLE_PROP_LAYOUT_REFR;
     LV_STYLE_GRID_CELL_ROW_POS = lv_style_register_prop() | LV_STYLE_PROP_LAYOUT_REFR;
-    LV_STYLE_GRID_CELL_COL_SPAN = lv_style_register_prop() | LV_STYLE_PROP_LAYOUT_REFR;
-    LV_STYLE_GRID_CELL_COL_POS = lv_style_register_prop() | LV_STYLE_PROP_LAYOUT_REFR;
+    LV_STYLE_GRID_CELL_COLUMN_SPAN = lv_style_register_prop() | LV_STYLE_PROP_LAYOUT_REFR;
+    LV_STYLE_GRID_CELL_COLUMN_POS = lv_style_register_prop() | LV_STYLE_PROP_LAYOUT_REFR;
     LV_STYLE_GRID_CELL_X_ALIGN = lv_style_register_prop() | LV_STYLE_PROP_LAYOUT_REFR;
     LV_STYLE_GRID_CELL_Y_ALIGN = lv_style_register_prop() | LV_STYLE_PROP_LAYOUT_REFR;
 }
@@ -163,8 +163,9 @@ static void grid_update(lv_obj_t * cont, void * user_data)
 
     /*Calculate the grids absolute x and y coordinates.
      *It will be used as helper during item repositioning to avoid calculating this value for every children*/
-    lv_coord_t pad_left = lv_obj_get_style_pad_left(cont, LV_PART_MAIN);
-    lv_coord_t pad_top = lv_obj_get_style_pad_top(cont, LV_PART_MAIN);
+    lv_coord_t border_widt = lv_obj_get_style_border_width(cont, LV_PART_MAIN);
+    lv_coord_t pad_left = lv_obj_get_style_pad_left(cont, LV_PART_MAIN) + border_widt;
+    lv_coord_t pad_top = lv_obj_get_style_pad_top(cont, LV_PART_MAIN) + border_widt;
     hint.grid_abs.x = pad_left + cont->coords.x1 - lv_obj_get_scroll_x(cont);
     hint.grid_abs.y = pad_top + cont->coords.y1 - lv_obj_get_scroll_y(cont);
 
@@ -207,11 +208,11 @@ static void calc(struct _lv_obj_t * cont, _lv_grid_calc_t * calc_out)
 
     lv_coord_t w_set = lv_obj_get_style_width(cont, LV_PART_MAIN);
     lv_coord_t h_set = lv_obj_get_style_height(cont, LV_PART_MAIN);
-    bool auto_w = w_set == LV_SIZE_CONTENT ? true : false;
+    bool auto_w = (w_set == LV_SIZE_CONTENT && !cont->w_layout) ? true : false;
     lv_coord_t cont_w = lv_obj_get_content_width(cont);
     calc_out->grid_w = grid_align(cont_w, auto_w, get_grid_col_align(cont), col_gap, calc_out->col_num, calc_out->w, calc_out->x, rev);
 
-    bool auto_h = h_set == LV_SIZE_CONTENT ? true : false;
+    bool auto_h = (h_set == LV_SIZE_CONTENT && !cont->h_layout) ? true : false;
     lv_coord_t cont_h = lv_obj_get_content_height(cont);
     calc_out->grid_h = grid_align(cont_h, auto_h, get_grid_row_align(cont), row_gap, calc_out->row_num, calc_out->h, calc_out->y, false);
 
@@ -284,12 +285,21 @@ static void calc_cols(lv_obj_t * cont, _lv_grid_calc_t * c)
     lv_coord_t free_w = cont_w - grid_w;
     if(free_w < 0) free_w = 0;
 
+    int32_t last_fr_i = -1;
+    int32_t last_fr_x = 0;
     for(i = 0; i < c->col_num; i++) {
         lv_coord_t x = col_templ[i];
         if(IS_FR(x)) {
             lv_coord_t f = GET_FR(x);
             c->w[i] = (free_w * f) / col_fr_cnt;
+            last_fr_i = i;
+            last_fr_x = f;
         }
+    }
+
+    /*To avoid rounding errors set the last FR track to the remaining size */
+    if(last_fr_i >= 0) {
+    	c->w[last_fr_i] = free_w - ((free_w * (col_fr_cnt - last_fr_x)) / col_fr_cnt);
     }
 }
 
@@ -337,17 +347,25 @@ static void calc_rows(lv_obj_t * cont, _lv_grid_calc_t * c)
         }
     }
 
+
     lv_coord_t row_gap = lv_obj_get_style_pad_row(cont, LV_PART_MAIN);
     lv_coord_t cont_h = lv_obj_get_content_height(cont) - row_gap * (c->row_num - 1);
     lv_coord_t free_h = cont_h - grid_h;
     if(free_h < 0) free_h = 0;
 
+    int32_t last_fr_i = -1;
+    int32_t last_fr_x = 0;
     for(i = 0; i < c->row_num; i++) {
         lv_coord_t x = row_templ[i];
         if(IS_FR(x)) {
             lv_coord_t f = GET_FR(x);
             c->h[i] = (free_h * f) / row_fr_cnt;
         }
+    }
+
+    /*To avoid rounding errors set the last FR track to the remaining size */
+    if(last_fr_i >= 0) {
+    	c->h[last_fr_i] = free_h - ((free_h * (row_fr_cnt - last_fr_x)) / row_fr_cnt);
     }
 }
 

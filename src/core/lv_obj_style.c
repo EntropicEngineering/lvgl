@@ -107,6 +107,9 @@ void lv_obj_remove_style(lv_obj_t * obj, lv_style_t * style, lv_style_selector_t
 {
     lv_state_t state = lv_obj_style_get_selector_state(selector);
     lv_part_t part = lv_obj_style_get_selector_part(selector);
+    lv_style_prop_t prop = LV_STYLE_PROP_ANY;
+    if(style && style->prop_cnt == 0) prop = LV_STYLE_PROP_INV;
+
     uint32_t i = 0;
     bool deleted = false;
     while(i <  obj->style_cnt) {
@@ -143,8 +146,8 @@ void lv_obj_remove_style(lv_obj_t * obj, lv_style_t * style, lv_style_selector_t
         /*The style from the current `i` index is removed, so `i` points to the next style.
          *Therefore it doesn't needs to be incremented*/
     }
-    if(deleted) {
-        lv_obj_refresh_style(obj, part, LV_STYLE_PROP_ANY);
+    if(deleted && prop != LV_STYLE_PROP_INV) {
+        lv_obj_refresh_style(obj, part, prop);
     }
 }
 
@@ -173,14 +176,15 @@ void lv_obj_refresh_style(lv_obj_t * obj, lv_style_selector_t selector, lv_style
     lv_part_t part = lv_obj_style_get_selector_part(selector);
 
     if((part == LV_PART_ANY || part == LV_PART_MAIN) && (prop == LV_STYLE_PROP_ANY || (prop & LV_STYLE_PROP_LAYOUT_REFR))) {
-        lv_event_send(obj, LV_EVENT_STYLE_CHANGED, NULL); /*To update layout*/
-        if(obj->parent) obj->parent->layout_inv = 1;
+        lv_event_send(obj, LV_EVENT_STYLE_CHANGED, NULL);
+        lv_obj_mark_layout_as_dirty(obj);
     }
     if((part == LV_PART_ANY || part == LV_PART_MAIN) && (prop == LV_STYLE_PROP_ANY || (prop & LV_STYLE_PROP_PARENT_LAYOUT_REFR))) {
         lv_obj_t * parent = lv_obj_get_parent(obj);
         if(parent) lv_obj_mark_layout_as_dirty(parent);
     }
-    else if(prop & LV_STYLE_PROP_EXT_DRAW) {
+
+    if(prop == LV_STYLE_PROP_ANY || (prop & LV_STYLE_PROP_EXT_DRAW)) {
         lv_obj_refresh_ext_draw_size(obj);
     }
     lv_obj_invalidate(obj);
@@ -369,6 +373,8 @@ _lv_style_state_cmp_t _lv_obj_style_state_compare(lv_obj_t * obj, lv_state_t sta
             else if(lv_style_get_prop(style, LV_STYLE_PAD_COLUMN, &v))  res_tmp = _LV_STYLE_STATE_CMP_DIFF_LAYOUT;
             else if(lv_style_get_prop(style, LV_STYLE_PAD_ROW, &v))  res_tmp = _LV_STYLE_STATE_CMP_DIFF_LAYOUT;
             else if(lv_style_get_prop(style, LV_STYLE_LAYOUT, &v))  res_tmp = _LV_STYLE_STATE_CMP_DIFF_LAYOUT;
+            else if(lv_style_get_prop(style, LV_STYLE_TRANSLATE_X, &v))  res_tmp = _LV_STYLE_STATE_CMP_DIFF_LAYOUT;
+            else if(lv_style_get_prop(style, LV_STYLE_TRANSLATE_Y, &v))  res_tmp = _LV_STYLE_STATE_CMP_DIFF_LAYOUT;
             else if(lv_style_get_prop(style, LV_STYLE_WIDTH, &v))  res_tmp = _LV_STYLE_STATE_CMP_DIFF_LAYOUT;
             else if(lv_style_get_prop(style, LV_STYLE_HEIGHT, &v))  res_tmp = _LV_STYLE_STATE_CMP_DIFF_LAYOUT;
             else if(lv_style_get_prop(style, LV_STYLE_MIN_WIDTH, &v))  res_tmp = _LV_STYLE_STATE_CMP_DIFF_LAYOUT;
@@ -401,7 +407,9 @@ _lv_style_state_cmp_t _lv_obj_style_state_compare(lv_obj_t * obj, lv_state_t sta
             else {
                 if(res != _LV_STYLE_STATE_CMP_DIFF_DRAW_PAD) {
                     if((part_act == LV_PART_MAIN || part_act == LV_PART_SCROLLBAR)) {
-                        res = _LV_STYLE_STATE_CMP_DIFF_REDRAW;
+                        res = _LV_STYLE_STATE_CMP_DIFF_REDRAW_MAIN;
+                    } else if(res != _LV_STYLE_STATE_CMP_DIFF_REDRAW_MAIN) {
+                        res = _LV_STYLE_STATE_CMP_DIFF_REDRAW_PART;
                     }
                 }
             }
@@ -787,7 +795,6 @@ static void trans_anim_ready_cb(lv_anim_t * a)
 
                 if(lv_style_is_empty(obj->styles[i].style)) {
                     lv_obj_remove_style(obj, obj_style->style, obj_style->selector);
-                    //trans_del(obj, obj_style->part, prop, NULL);
 
                 }
                 break;

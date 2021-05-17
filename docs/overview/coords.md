@@ -5,12 +5,14 @@
 # Positions, sizes, and layouts
 
 ## Overview
-Similarly to many other parts of LVGL, the concept of setting the coordinates were inspired by CSS. It doesn't mean a perfect copy of the standard but parts that are reasonable were adopted in LVGL.
+Similarly to many other parts of LVGL, the concept of setting the coordinates were inspired by CSS. It doesn't mean a perfect copy of the standard but subsets of CSS were implemented (sometimes with minor adjustments).
 It shorts it means:
 - the set coordinates (size, position, layouts, etc) are stored in styles
 - support min-width, max-width, min-height, max-height
 - have pixel, percentage, and "content" units 
-- a subset of flexbox and grid layouts are supported by default 
+- x=0; y=0 coordinate means the to top-left corner of the parent plus the left/top padding plus border width
+- width/height means the full size, the "content area" is smaller with padding and border width 
+- a subset of flexbox and grid layouts are supported
  
 ###  Units
 - pixel: Simply a position in pixels. A simple integer always mean pixel. E.g. `lv_obj_set_x(btn, 10)`
@@ -18,14 +20,54 @@ It shorts it means:
 - `LV_SIZE_CONTENT`: Special value to set the width/height of an object to involve all the children. Its similar to `auto` in CSS. E.g. `lv_obj_set_width(btn, LV_SIZE_CONTENT)`.
 
 ### Boxing model
+LVGL follows CSS's [border-box](https://developer.mozilla.org/en-US/docs/Web/CSS/box-sizing) model.
 An object's "box" is built from the following parts:
 - bounding box: the width/height of the elements.
+- border width: the width of the border. 
 - padding: space between the sides of the object and its children. 
-- content: the content area which size if the bounding box reduced by the size of the paddings.
+- content: the content area which size if the bounding box reduced by the border width and the size of the paddings.
 
-The border is drawn inside the bounding box and doesn't take an extra space. (It's different from CSS in which increasing the border width makes the object larger.)
+![The box models of LVGL: The content area is smaller then the bounding box with the padding and border width](/misc/boxmodel.png)
+
+The border is drawn inside the bounding box. Inside the border LVGL keeps "padding size" to place the children. 
 
 The outline is drawn outside of the bounding box.
+
+### Important notes
+This section describes special cases in which LVGL's behavior might look unexpected.
+
+#### Postponed coordinate calculation
+LVGL doesn't recalculate all the coordinate changes immediately to improve performance. 
+Instead, the objects are marked as "dirty" and before redrawing the screen LVGL checks if there are any "dirty" objects. If so it refreshes their position, size and layout.
+
+In other words, if you need to get the any coordinate of an object and it the coordinates were just changed LVGL's needs to be forced to recalculate to coordinates. 
+To do this call `lv_obj_update_layout(obj)`the size and position might depends on the parent or layout `lv_obj_update_layout` recalculates the coordinates of all objects on the screen of `obj`.
+
+#### Removing styles
+As it's described in the [Using styles](#using-styles) section the coordinates can be set via style properties too. 
+To be more precise under the hood every style coordinate related property is stored as style a property. If you use `lv_obj_set_x(obj, 20)` LVGL saves `x=20` in the local style of the object.
+
+It's an internal mechanism and doesn't matter much as you use LVGL. However, there is one case in which you need to aware of that. If the style(s) of an object are removed by 
+```c
+lv_obj_remove_style_all(obj)
+˙``
+or
+```c
+lv_obj_remove_style(obj, NULL, LV_PART_MAIN);
+```
+The earlier set coordinates will be removed as well.
+
+For example:
+```c
+/*The size of obj1 will be set back to the default in the end*/
+lv_obj_set_size(obj1, 200, 100);  /*Now obj1 has 200;100 size*/
+lv_obj_remove_style_all(obj1);    /*It removes the set sizes*/
+
+
+/*obj2 will have 200;100 size in the end */
+lv_obj_remove_style_all(obj2);
+lv_obj_set_size(obj2, 200, 100);
+```
 
 ## Position
 
@@ -46,7 +88,7 @@ lv_obj_set_x(btn, lv_pct(10)); //x = 10 % of parant content area width
 ```
 
 ### Align
-In some cases it's convenient to change the origin of the positioning from the the default top left. If the the orogin is changed e.g. to bottom-right, the (0,0) position means: align to the bottom-right corner. 
+In some cases it's convenient to change the origin of the positioning from the the default top left. If the origin is changed e.g. to bottom-right, the (0,0) position means: align to the bottom-right corner. 
 To change the origin use:
 ```c
 lv_obj_set_align(obj, align);
@@ -115,13 +157,13 @@ lv_obj_set_height(obj, 100);
 lv_obj_set_size(obj, 200, 100); 	//Or in one function
 ```
 
-Percentage values aer calculated based on the parent's content area size. For example to set the object's height to the screen height:
+Percentage values are calculated based on the parent's content area size. For example to set the object's height to the screen height:
 ```c
 lv_obj_set_height(obj, lv_pct(100));
 ``` 
 
 Size setting supports a value: `LV_SIZE_CONTENT`. It means the object's size in the respective direction will be set to involve its the children. 
-Note that only children on the right and bottom will be considered and children o nthe top and left remains cropped. This limitation makes the behavior more predictable.
+Note that only children on the right and bottom will be considered and children on the top and left remains cropped. This limitation makes the behavior more predictable.
 
 Object with `LV_OBJ_FLAG_HIDDEN` or `LV_OBJ_FLAG_FLOATING` will be ignored by `LV_SIZE_CONTENT` calculation.
 

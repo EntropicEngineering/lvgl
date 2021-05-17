@@ -77,7 +77,9 @@ const lv_obj_class_t lv_roller_label_class  = {
 lv_obj_t * lv_roller_create(lv_obj_t * parent)
 {
     LV_LOG_INFO("begin")
-    return lv_obj_create_from_class(&lv_roller_class, parent);
+    lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS, parent);
+    lv_obj_class_init_obj(obj);
+    return obj;
 }
 
 /*=====================
@@ -297,7 +299,9 @@ static void lv_roller_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLL_CHAIN);
 
-    lv_obj_create_from_class(&lv_roller_label_class, obj);
+    LV_LOG_INFO("begin")
+    lv_obj_t * label = lv_obj_class_create_obj(&lv_roller_label_class, obj);
+    lv_obj_class_init_obj(label);
     lv_roller_set_options(obj, "Option 1\nOption 2\nOption 3\nOption 4\nOption 5", LV_ROLLER_MODE_NORMAL);
 
     LV_LOG_TRACE("finshed");
@@ -325,7 +329,7 @@ static void lv_roller_event(const lv_obj_class_t * class_p, lv_event_t * e)
         lv_obj_t * label = get_label(obj);
         /*Be sure the label's style is updated before processing the roller*/
         if(label) lv_event_send(label, LV_EVENT_STYLE_CHANGED, NULL);
-        lv_obj_handle_self_size_chg(obj);
+        lv_obj_refresh_self_size(obj);
         refr_position(obj, false);
     }
     else if(code == LV_EVENT_SIZE_CHANGED) {
@@ -581,7 +585,6 @@ static void refr_position(lv_obj_t * obj, lv_anim_enable_t anim_en)
         break;
     }
 
-
     lv_roller_t * roller = (lv_roller_t*)obj;
     const lv_font_t * font = lv_obj_get_style_text_font(obj, LV_PART_MAIN);
     lv_coord_t line_space = lv_obj_get_style_text_line_space(obj, LV_PART_MAIN);
@@ -620,7 +623,6 @@ static void refr_position(lv_obj_t * obj, lv_anim_enable_t anim_en)
 
 static lv_res_t release_handler(lv_obj_t * obj)
 {
-
     lv_obj_t * label = get_label(obj);
     if(label == NULL) return LV_RES_OK;
 

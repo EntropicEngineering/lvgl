@@ -137,8 +137,9 @@ static void flex_update(lv_obj_t * cont, void * user_data)
     lv_coord_t track_gap = !f.row ? lv_obj_get_style_pad_column(cont, LV_PART_MAIN) : lv_obj_get_style_pad_row(cont, LV_PART_MAIN);
     lv_coord_t item_gap = f.row ? lv_obj_get_style_pad_column(cont, LV_PART_MAIN) : lv_obj_get_style_pad_row(cont, LV_PART_MAIN);
     lv_coord_t max_main_size = (f.row ? lv_obj_get_content_width(cont) : lv_obj_get_content_height(cont));
-    lv_coord_t abs_y = cont->coords.y1 + lv_obj_get_style_pad_top(cont, LV_PART_MAIN) - lv_obj_get_scroll_y(cont);
-    lv_coord_t abs_x = cont->coords.x1 + lv_obj_get_style_pad_left(cont, LV_PART_MAIN) - lv_obj_get_scroll_x(cont);
+    lv_coord_t border_widt = lv_obj_get_style_border_width(cont, LV_PART_MAIN);
+    lv_coord_t abs_y = cont->coords.y1 + lv_obj_get_style_pad_top(cont, LV_PART_MAIN) + border_widt - lv_obj_get_scroll_y(cont);
+    lv_coord_t abs_x = cont->coords.x1 + lv_obj_get_style_pad_left(cont, LV_PART_MAIN) + border_widt - lv_obj_get_scroll_x(cont);
 
     lv_flex_align_t track_cross_place = f.track_place;
     lv_coord_t * cross_pos = (f.row ? &abs_y : &abs_x);
@@ -146,8 +147,9 @@ static void flex_update(lv_obj_t * cont, void * user_data)
     lv_coord_t w_set = lv_obj_get_style_width(cont, LV_PART_MAIN);
     lv_coord_t h_set = lv_obj_get_style_height(cont, LV_PART_MAIN);
 
-    if((f.row && h_set == LV_SIZE_CONTENT) ||
-       (!f.row && w_set == LV_SIZE_CONTENT))
+    /*Content sized objects should squeezed the gap between the children, therefore any alignment will look like `START`*/
+    if((f.row && h_set == LV_SIZE_CONTENT && cont->h_layout == 0) ||
+    	(!f.row && w_set == LV_SIZE_CONTENT && cont->w_layout == 0))
     {
         track_cross_place = LV_FLEX_ALIGN_START;
     }
@@ -362,7 +364,10 @@ static void children_repos(lv_obj_t * cont, flex_t * f, int32_t item_first_id, i
         if(grow_size) {
             lv_coord_t s = 0;
             for(i = 0; i < t->grow_item_cnt; i++) {
-                if(t->grow_dsc[i].item == item) s = t->grow_dsc[i].final_size;
+                if(t->grow_dsc[i].item == item) {
+                    s = t->grow_dsc[i].final_size;
+                    break;
+                }
             }
             lv_area_t old_coords;
             lv_area_copy(&old_coords, &item->coords);

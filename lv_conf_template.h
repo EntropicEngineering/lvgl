@@ -371,6 +371,8 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 
 #define LV_USE_ARC          1
 
+#define LV_USE_ANIMIMG	    1
+
 #define LV_USE_BAR          1
 
 #define LV_USE_BTN          1
@@ -381,7 +383,6 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 
 #define LV_USE_CHECKBOX     1
 
-#define LV_USE_CHART        1
 
 #define LV_USE_DROPDOWN     1   /*Requires: lv_label*/
 
@@ -389,13 +390,11 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 
 #define LV_USE_LABEL        1
 #if LV_USE_LABEL
-#  define LV_LABEL_TEXT_SEL         1   /*Enable selecting text of the label*/
+#  define LV_LABEL_TEXT_SELECTION         1   /*Enable selecting text of the label*/
 #  define LV_LABEL_LONG_TXT_HINT    1   /*Store some extra info in labels to speed up drawing of very long texts*/
 #endif
 
 #define LV_USE_LINE         1
-
-#define LV_USE_METER        1
 
 #define LV_USE_ROLLER       1   /*Requires: lv_label*/
 #if LV_USE_ROLLER
@@ -434,6 +433,8 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 # define LV_USE_CALENDAR_HEADER_DROPDOWN    1
 #endif  /*LV_USE_CALENDAR*/
 
+#define LV_USE_CHART        1
+
 #define LV_USE_COLORWHEEL   1
 
 #define LV_USE_IMGBTN       1
@@ -443,6 +444,8 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 #define LV_USE_LED          1
 
 #define LV_USE_LIST         1
+
+#define LV_USE_METER        1
 
 #define LV_USE_MSGBOX       1
 
@@ -456,6 +459,12 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 
 #define LV_USE_WIN          1
 
+#define LV_USE_SPAN         1
+#if LV_USE_SPAN
+/*A line text can contain maximum num of span descriptor */
+#  define LV_SPAN_SNIPPET_STACK_SIZE   64
+#endif
+
 /*-----------
  * Themes
  *----------*/
@@ -463,8 +472,8 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 #define LV_USE_THEME_DEFAULT    1
 #if LV_USE_THEME_DEFAULT
 
-/*1: Light mode; 0: Dark mode*/
-# define LV_THEME_DEFAULT_PALETTE_LIGHT     1
+/*0: Light mode; 1: Dark mode*/
+# define LV_THEME_DEFAULT_DARK     0
 
 /*1: Enable grow on press*/
 # define LV_THEME_DEFAULT_GROW              1

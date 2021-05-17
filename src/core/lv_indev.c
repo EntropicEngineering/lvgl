@@ -76,10 +76,11 @@ void lv_indev_read_timer_cb(lv_timer_t * timer)
     indev_proc_reset_query_handler(indev_act);
 
     if(indev_act->proc.disabled) return;
-    bool more_to_read;
+    bool continue_reading;
     do {
         /*Read the data*/
-        more_to_read = _lv_indev_read(indev_act, &data);
+        _lv_indev_read(indev_act, &data);
+        continue_reading = data.continue_reading;
 
         /*The active object might deleted even in the read function*/
         indev_proc_reset_query_handler(indev_act);
@@ -109,7 +110,7 @@ void lv_indev_read_timer_cb(lv_timer_t * timer)
         }
         /*Handle reset query if it happened in during processing*/
         indev_proc_reset_query_handler(indev_act);
-    } while(more_to_read);
+    } while(continue_reading);
 
     /*End of indev processing, so no act indev*/
     indev_act     = NULL;
@@ -221,7 +222,7 @@ void lv_indev_get_point(const lv_indev_t * indev, lv_point_t * point)
     }
 }
 
-lv_gesture_dir_t lv_indev_get_gesture_dir(const lv_indev_t * indev)
+lv_dir_t lv_indev_get_gesture_dir(const lv_indev_t * indev)
 {
     return indev->proc.types.pointer.gesture_dir;
 }
@@ -234,7 +235,7 @@ uint32_t lv_indev_get_key(const lv_indev_t * indev)
         return indev->proc.types.keypad.last_key;
 }
 
-lv_indev_scroll_dir_t lv_indev_get_scroll_dir(const lv_indev_t * indev)
+lv_dir_t lv_indev_get_scroll_dir(const lv_indev_t * indev)
 {
     if(indev == NULL) return false;
     if(indev->driver->type != LV_INDEV_TYPE_POINTER && indev->driver->type != LV_INDEV_TYPE_BUTTON) return false;
@@ -403,14 +404,14 @@ static void indev_keypad_proc(lv_indev_t * i, lv_indev_data_t * data)
             /*Send the ENTER as a normal KEY*/
             lv_group_send_data(g, LV_KEY_ENTER);
 
-            lv_event_send(indev_obj_act, LV_EVENT_PRESSED, NULL);
+            lv_event_send(indev_obj_act, LV_EVENT_PRESSED, indev_act);
             if(indev_reset_check(&i->proc)) return;
         }
         else if(data->key == LV_KEY_ESC) {
             /*Send the ESC as a normal KEY*/
             lv_group_send_data(g, LV_KEY_ESC);
 
-            lv_event_send(indev_obj_act, LV_EVENT_CANCEL, NULL);
+            lv_event_send(indev_obj_act, LV_EVENT_CANCEL, indev_act);
             if(indev_reset_check(&i->proc)) return;
         }
         /*Move the focus on NEXT*/
@@ -434,7 +435,7 @@ static void indev_keypad_proc(lv_indev_t * i, lv_indev_data_t * data)
     else if(data->state == LV_INDEV_STATE_PRESSED && prev_state == LV_INDEV_STATE_PRESSED) {
 
         if(data->key == LV_KEY_ENTER) {
-            lv_event_send(indev_obj_act, LV_EVENT_PRESSING, NULL);
+            lv_event_send(indev_obj_act, LV_EVENT_PRESSING, indev_act);
             if(indev_reset_check(&i->proc)) return;
         }
 
@@ -443,7 +444,7 @@ static void indev_keypad_proc(lv_indev_t * i, lv_indev_data_t * data)
             i->proc.long_pr_sent = 1;
             if(data->key == LV_KEY_ENTER) {
                 i->proc.longpr_rep_timestamp = lv_tick_get();
-                lv_event_send(indev_obj_act, LV_EVENT_LONG_PRESSED, NULL);
+                lv_event_send(indev_obj_act, LV_EVENT_LONG_PRESSED, indev_act);
                 if(indev_reset_check(&i->proc)) return;
             }
         }
@@ -455,7 +456,7 @@ static void indev_keypad_proc(lv_indev_t * i, lv_indev_data_t * data)
 
             /*Send LONG_PRESS_REP on ENTER*/
             if(data->key == LV_KEY_ENTER) {
-                lv_event_send(indev_obj_act, LV_EVENT_LONG_PRESSED_REPEAT, NULL);
+                lv_event_send(indev_obj_act, LV_EVENT_LONG_PRESSED_REPEAT, indev_act);
                 if(indev_reset_check(&i->proc)) return;
             }
             /*Move the focus on NEXT again*/
@@ -484,15 +485,15 @@ static void indev_keypad_proc(lv_indev_t * i, lv_indev_data_t * data)
         data->key = prev_key;
         if(data->key == LV_KEY_ENTER) {
 
-            lv_event_send(indev_obj_act, LV_EVENT_RELEASED, NULL);
+            lv_event_send(indev_obj_act, LV_EVENT_RELEASED, indev_act);
             if(indev_reset_check(&i->proc)) return;
 
             if(i->proc.long_pr_sent == 0) {
-                lv_event_send(indev_obj_act, LV_EVENT_SHORT_CLICKED, NULL);
+                lv_event_send(indev_obj_act, LV_EVENT_SHORT_CLICKED, indev_act);
                 if(indev_reset_check(&i->proc)) return;
             }
 
-            lv_event_send(indev_obj_act, LV_EVENT_CLICKED, NULL);
+            lv_event_send(indev_obj_act, LV_EVENT_CLICKED, indev_act);
             if(indev_reset_check(&i->proc)) return;
 
         }
@@ -549,7 +550,7 @@ static void indev_encoder_proc(lv_indev_t * i, lv_indev_data_t * data)
             bool editable = lv_obj_is_editable(indev_obj_act);
 
             if(lv_group_get_editing(g) == true || editable == false) {
-                lv_event_send(indev_obj_act, LV_EVENT_PRESSED, NULL);
+                lv_event_send(indev_obj_act, LV_EVENT_PRESSED, indev_act);
                 if(indev_reset_check(&i->proc)) return;
             }
         }
@@ -565,7 +566,7 @@ static void indev_encoder_proc(lv_indev_t * i, lv_indev_data_t * data)
             /*Send the ESC as a normal KEY*/
             lv_group_send_data(g, LV_KEY_ESC);
 
-            lv_event_send(indev_obj_act, LV_EVENT_CANCEL, NULL);
+            lv_event_send(indev_obj_act, LV_EVENT_CANCEL, indev_act);
             if(indev_reset_check(&i->proc)) return;
         }
         /*Just send other keys to the object (e.g. 'A' or `LV_GROUP_KEY_RIGHT`)*/
@@ -594,7 +595,7 @@ static void indev_encoder_proc(lv_indev_t * i, lv_indev_data_t * data)
                 }
                 /*If not editable then just send a long press Call the ancestor's event handler*/
                 else {
-                    lv_event_send(indev_obj_act, LV_EVENT_LONG_PRESSED, NULL);
+                    lv_event_send(indev_obj_act, LV_EVENT_LONG_PRESSED, indev_act);
                     if(indev_reset_check(&i->proc)) return;
                 }
             }
@@ -607,7 +608,7 @@ static void indev_encoder_proc(lv_indev_t * i, lv_indev_data_t * data)
             i->proc.longpr_rep_timestamp = lv_tick_get();
 
             if(data->key == LV_KEY_ENTER) {
-                lv_event_send(indev_obj_act, LV_EVENT_LONG_PRESSED_REPEAT, NULL);
+                lv_event_send(indev_obj_act, LV_EVENT_LONG_PRESSED_REPEAT, indev_act);
                 if(indev_reset_check(&i->proc)) return;
             }
             else if(data->key == LV_KEY_LEFT) {
@@ -635,13 +636,13 @@ static void indev_encoder_proc(lv_indev_t * i, lv_indev_data_t * data)
 
             /*The button was released on a non-editable object. Just send enter*/
             if(editable == false) {
-                lv_event_send(indev_obj_act, LV_EVENT_RELEASED, NULL);
+                lv_event_send(indev_obj_act, LV_EVENT_RELEASED, indev_act);
                 if(indev_reset_check(&i->proc)) return;
 
-                if(i->proc.long_pr_sent == 0) lv_event_send(indev_obj_act, LV_EVENT_SHORT_CLICKED, NULL);
+                if(i->proc.long_pr_sent == 0) lv_event_send(indev_obj_act, LV_EVENT_SHORT_CLICKED, indev_act);
                 if(indev_reset_check(&i->proc)) return;
 
-                lv_event_send(indev_obj_act, LV_EVENT_CLICKED, NULL);
+                lv_event_send(indev_obj_act, LV_EVENT_CLICKED, indev_act);
                 if(indev_reset_check(&i->proc)) return;
 
             }
@@ -649,13 +650,13 @@ static void indev_encoder_proc(lv_indev_t * i, lv_indev_data_t * data)
             else if(g->editing) {
                 /*Ignore long pressed enter release because it comes from mode switch*/
                 if(!i->proc.long_pr_sent || _lv_ll_get_len(&g->obj_ll) <= 1) {
-                    lv_event_send(indev_obj_act, LV_EVENT_RELEASED, NULL);
+                    lv_event_send(indev_obj_act, LV_EVENT_RELEASED, indev_act);
                     if(indev_reset_check(&i->proc)) return;
 
-                    lv_event_send(indev_obj_act, LV_EVENT_SHORT_CLICKED, NULL);
+                    lv_event_send(indev_obj_act, LV_EVENT_SHORT_CLICKED, indev_act);
                     if(indev_reset_check(&i->proc)) return;
 
-                    lv_event_send(indev_obj_act, LV_EVENT_CLICKED, NULL);
+                    lv_event_send(indev_obj_act, LV_EVENT_CLICKED, indev_act);
                     if(indev_reset_check(&i->proc)) return;
 
 
@@ -805,7 +806,7 @@ static void indev_proc_press(lv_indev_proc_t * proc)
             /*Save the obj because in special cases `act_obj` can change in the Call the ancestor's event handler function*/
             lv_obj_t * last_obj = proc->types.pointer.act_obj;
 
-            lv_event_send(last_obj, LV_EVENT_PRESS_LOST, NULL);
+            lv_event_send(last_obj, LV_EVENT_PRESS_LOST, indev_act);
             if(indev_reset_check(proc)) return;
         }
 
@@ -818,7 +819,8 @@ static void indev_proc_press(lv_indev_proc_t * proc)
             proc->long_pr_sent                 = 0;
             proc->types.pointer.scroll_sum.x     = 0;
             proc->types.pointer.scroll_sum.y     = 0;
-            proc->types.pointer.scroll_dir = LV_INDEV_SCROLL_DIR_NONE;
+            proc->types.pointer.scroll_dir = LV_DIR_NONE;
+            proc->types.pointer.gesture_dir = LV_DIR_NONE;
             proc->types.pointer.gesture_sent   = 0;
             proc->types.pointer.gesture_sum.x  = 0;
             proc->types.pointer.gesture_sum.y  = 0;
@@ -826,7 +828,7 @@ static void indev_proc_press(lv_indev_proc_t * proc)
             proc->types.pointer.vect.y         = 0;
 
             /*Call the ancestor's event handler about the press*/
-            lv_event_send(indev_obj_act, LV_EVENT_PRESSED, NULL);
+            lv_event_send(indev_obj_act, LV_EVENT_PRESSED, indev_act);
             if(indev_reset_check(proc)) return;
 
             if(indev_act->proc.wait_until_release) return;
@@ -865,7 +867,7 @@ static void indev_proc_press(lv_indev_proc_t * proc)
         if(proc->types.pointer.scroll_obj == NULL && proc->long_pr_sent == 0) {
             /*Call the ancestor's event handler about the long press if enough time elapsed*/
             if(lv_tick_elaps(proc->pr_timestamp) > indev_act->driver->long_press_time) {
-                lv_event_send(indev_obj_act, LV_EVENT_LONG_PRESSED, NULL);
+                lv_event_send(indev_obj_act, LV_EVENT_LONG_PRESSED, indev_act);
                 if(indev_reset_check(proc)) return;
 
                 /*Mark the Call the ancestor's event handler sending to do not send it again*/
@@ -880,7 +882,7 @@ static void indev_proc_press(lv_indev_proc_t * proc)
         if(proc->types.pointer.scroll_obj == NULL && proc->long_pr_sent == 1) {
             /*Call the ancestor's event handler about the long press repeat if enough time elapsed*/
             if(lv_tick_elaps(proc->longpr_rep_timestamp) > indev_act->driver->long_press_repeat_time) {
-                lv_event_send(indev_obj_act, LV_EVENT_LONG_PRESSED_REPEAT, NULL);
+                lv_event_send(indev_obj_act, LV_EVENT_LONG_PRESSED_REPEAT, indev_act);
                 if(indev_reset_check(proc)) return;
                 proc->longpr_rep_timestamp = lv_tick_get();
             }
@@ -909,17 +911,17 @@ static void indev_proc_release(lv_indev_proc_t * proc)
         LV_LOG_INFO("released");
 
         /*Send RELEASE Call the ancestor's event handler and event*/
-        lv_event_send(indev_obj_act, LV_EVENT_RELEASED, NULL);
+        lv_event_send(indev_obj_act, LV_EVENT_RELEASED, indev_act);
         if(indev_reset_check(proc)) return;
 
         /*Send CLICK if no scrolling*/
         if(scroll_obj == NULL) {
             if(proc->long_pr_sent == 0) {
-                lv_event_send(indev_obj_act, LV_EVENT_SHORT_CLICKED, NULL);
+                lv_event_send(indev_obj_act, LV_EVENT_SHORT_CLICKED, indev_act);
                 if(indev_reset_check(proc)) return;
             }
 
-            lv_event_send(indev_obj_act, LV_EVENT_CLICKED, NULL);
+            lv_event_send(indev_obj_act, LV_EVENT_CLICKED, indev_act);
             if(indev_reset_check(proc)) return;
         }
 
@@ -955,7 +957,7 @@ static void indev_proc_reset_query_handler(lv_indev_t * indev)
         indev->proc.longpr_rep_timestamp            = 0;
         indev->proc.types.pointer.scroll_sum.x        = 0;
         indev->proc.types.pointer.scroll_sum.y        = 0;
-        indev->proc.types.pointer.scroll_dir = LV_INDEV_SCROLL_DIR_NONE;
+        indev->proc.types.pointer.scroll_dir = LV_DIR_NONE;
         indev->proc.types.pointer.scroll_throw_vect.x = 0;
         indev->proc.types.pointer.scroll_throw_vect.y = 0;
         indev->proc.types.pointer.gesture_sum.x     = 0;
@@ -988,11 +990,11 @@ static void indev_click_focus(lv_indev_proc_t * proc)
             /*The object are not in group*/
             else {
                 if(proc->types.pointer.last_pressed) {
-                    lv_event_send(proc->types.pointer.last_pressed, LV_EVENT_DEFOCUSED, NULL);
+                    lv_event_send(proc->types.pointer.last_pressed, LV_EVENT_DEFOCUSED, indev_act);
                     if(indev_reset_check(proc)) return;
                 }
 
-                lv_event_send(obj_to_focus, LV_EVENT_FOCUSED, NULL);
+                lv_event_send(obj_to_focus, LV_EVENT_FOCUSED, indev_act);
                 if(indev_reset_check(proc)) return;
             }
         }
@@ -1000,7 +1002,7 @@ static void indev_click_focus(lv_indev_proc_t * proc)
         else {
             /*If the prev. obj. is not in a group then defocus it.*/
             if(g_prev == NULL && proc->types.pointer.last_pressed) {
-                lv_event_send(proc->types.pointer.last_pressed, LV_EVENT_DEFOCUSED, NULL);
+                lv_event_send(proc->types.pointer.last_pressed, LV_EVENT_DEFOCUSED, indev_act);
                 if(indev_reset_check(proc)) return;
             }
             /*Focus on a non-group object*/
@@ -1008,12 +1010,12 @@ static void indev_click_focus(lv_indev_proc_t * proc)
                 if(proc->types.pointer.last_pressed) {
                     /*If the prev. object also wasn't in a group defocus it*/
                     if(g_prev == NULL) {
-                        lv_event_send(proc->types.pointer.last_pressed, LV_EVENT_DEFOCUSED, NULL);
+                        lv_event_send(proc->types.pointer.last_pressed, LV_EVENT_DEFOCUSED, indev_act);
                         if(indev_reset_check(proc)) return;
                     }
                     /*If the prev. object also was in a group at least "LEAVE" it instead of defocus*/
                     else {
-                        lv_event_send(proc->types.pointer.last_pressed, LV_EVENT_LEAVE, NULL);
+                        lv_event_send(proc->types.pointer.last_pressed, LV_EVENT_LEAVE, indev_act);
                         if(indev_reset_check(proc)) return;
                     }
                 }
@@ -1025,7 +1027,7 @@ static void indev_click_focus(lv_indev_proc_t * proc)
                 if(indev_reset_check(proc)) return;
             }
             else {
-                lv_event_send(obj_to_focus, LV_EVENT_FOCUSED, NULL);
+                lv_event_send(obj_to_focus, LV_EVENT_FOCUSED, indev_act);
                 if(indev_reset_check(proc)) return;
             }
         }
@@ -1070,18 +1072,18 @@ void indev_gesture(lv_indev_proc_t * proc)
 
         if(LV_ABS(proc->types.pointer.gesture_sum.x) > LV_ABS(proc->types.pointer.gesture_sum.y)) {
             if(proc->types.pointer.gesture_sum.x > 0)
-                proc->types.pointer.gesture_dir = LV_GESTURE_DIR_RIGHT;
+                proc->types.pointer.gesture_dir = LV_DIR_RIGHT;
             else
-                proc->types.pointer.gesture_dir = LV_GESTURE_DIR_LEFT;
+                proc->types.pointer.gesture_dir = LV_DIR_LEFT;
         }
         else {
             if(proc->types.pointer.gesture_sum.y > 0)
-                proc->types.pointer.gesture_dir = LV_GESTURE_DIR_BOTTOM;
+                proc->types.pointer.gesture_dir = LV_DIR_BOTTOM;
             else
-                proc->types.pointer.gesture_dir = LV_GESTURE_DIR_TOP;
+                proc->types.pointer.gesture_dir = LV_DIR_TOP;
         }
 
-        lv_event_send(gesture_obj, LV_EVENT_GESTURE, NULL);
+        lv_event_send(gesture_obj, LV_EVENT_GESTURE, indev_act);
         if(indev_reset_check(proc)) return;
     }
 }

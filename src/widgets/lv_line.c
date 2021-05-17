@@ -54,7 +54,9 @@ const lv_obj_class_t lv_line_class = {
 lv_obj_t * lv_line_create(lv_obj_t * parent)
 {
     LV_LOG_INFO("begin")
-    return lv_obj_create_from_class(&lv_line_class, parent);
+    lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS, parent);
+    lv_obj_class_init_obj(obj);
+    return obj;
 }
 
 /*=====================
@@ -69,7 +71,7 @@ void lv_line_set_points(lv_obj_t * obj, const lv_point_t points[], uint16_t poin
     line->point_array    = points;
     line->point_num      = point_num;
 
-    lv_obj_handle_self_size_chg(obj);
+    lv_obj_refresh_self_size(obj);
 
     lv_obj_invalidate(obj);
 }
